@@ -1,453 +1,82 @@
-# Noire SaaS Platform - Next.js Technical Specification
+# SaaS Website Builder, Project Management And Dashboard With Stripe using Nextjs14, Bun, Stripe Connect, Prisma, MySQL, Tailwind
 
-## Technical Stack
+![Application Logo](https://storage.googleapis.com/msgsndr/0wtSXexlPhMN1945ooxW/media/65b7c3d24660477daf3d6708.png)
 
-### Frontend
-- **Framework**: Next.js 14+ with App Router
-- **Language**: TypeScript
-- **State Management**: 
-  - React Context for global UI state
-  - React Query for server state management
-- **Styling**: 
-  - Tailwind CSS
-  - shadcn/ui for component library
-  - CSS Modules for custom components
-- **Forms**: React Hook Form with Zod validation
-- **Charts/Visualizations**: 
-  - Recharts for analytics
-  - React DnD for Kanban boards
-  - Gantt charts using custom implementation
+### Features in this application.
+- 🤯 Multivendor B2B2B Saas
+- 🏢 Agency and Sub accounts
+- 🌐 Unlimited funnel hosting
+- 🚀 Full Website & Funnel builder
+- 💻 Role-based Access
+- 🔄 Stripe Subscription plans
+- 🛒 Stripe add-on products
+- 🔐 Connect Stripe accounts for all users! - Stripe Connect
+- 💳 Charge application fee per sale and recurring sales
+- 💰 Custom Dashboards
+- 📊 Media Storage
+- 📈 Stripe Product Sync
+- 📌Custom checkouts on funnels
+- 📢 Get leads from funnels
+- 🎨 Kanban board
+- 📂 Project management system
+- 🔗 Notifications
+- 📆 Funnel performance metrics
+- 🧾 Agency and subaccount metrics
+- 🌙 Graphs and charts
+- ☀️ Light & Dark mode
+- 📄 Functioning landing page
 
-### Backend
-- **API**: Next.js API routes with Edge Runtime where applicable
-- **Database**: 
-  - PostgreSQL with Prisma ORM
-  - Redis for caching and real-time features
-- **Authentication**: 
-  - Next-Auth with multiple providers
-  - JWT for session management
-- **File Storage**: Amazon S3 or similar
-- **Email**: Resend for transactional emails
-- **Search**: Elasticsearch or Meilisearch
 
-### DevOps
-- **Hosting**: Vercel
-- **CI/CD**: GitHub Actions
-- **Domain Management**: Custom domains via Vercel
-- **Monitoring**: 
-  - Vercel Analytics
-  - Sentry for error tracking
-  - OpenTelemetry for performance monitoring
+## Website builer
+A simple website builder that allows you to create content on the page. Simply drag and drop the chosen element (such as a container, text, or even a payment form) onto the editor page.
 
-## Multi-tenancy Implementation
+![image](https://github.com/denvudd/noire/assets/68691654/a1d851ae-baea-428f-985d-36aef9223658)
 
-### Database Schema
-```prisma
-model Organization {
-  id            String   @id @default(cuid())
-  name          String
-  slug          String   @unique
-  customDomain  String?  @unique
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  
-  // Relations
-  users         User[]
-  clients       Client[]
-  projects      Project[]
-  subscriptionTier SubscriptionTier @relation(fields: [tierId], references: [id])
-  tierId        String
-}
 
-model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  role          Role     @default(USER)
-  organizationId String
-  organization  Organization @relation(fields: [organizationId], references: [id])
-}
-```
+The editor has full accessibility; for example, to undo your last actions, click the Undo button or press the Ctrl + Z key combination.
 
-### Domain Routing
-```typescript
-// middleware.ts
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+To preview the site in Preview mode, press the Ctrl + P key combination
 
-export async function middleware(request: NextRequest) {
-  const hostname = request.headers.get('host')
-  const { pathname } = request.nextUrl
-  
-  // Check custom domain or subdomain logic
-  const organization = await prisma.organization.findFirst({
-    where: {
-      OR: [
-        { customDomain: hostname },
-        { slug: hostname?.split('.')[0] }
-      ]
-    }
-  })
-  
-  // Routing logic based on organization
-}
-```
+To style the selected element, choose the section in the Settings tab and modify the styles as desired. Hotkeys are also available, for example, Ctrl + B to make text bold or Ctrl + I to italicize font style.
 
-## Development Phases
+![image](https://github.com/denvudd/noire/assets/68691654/bda993ec-edd2-4841-8dd8-6b64542c9e9e)
 
-### Phase 1: Foundation Setup
-1. **Project Initialization**
-   - Initialize Next.js 14 project with TypeScript
-   - Configure ESLint and Prettier
-   - Set up Git repository with conventional commits
-   - Implement Tailwind CSS and shadcn/ui
-   - Create base layout components
-   - Set up test environment with Jest and Testing Library
 
-2. **Database & Authentication**
-   ```typescript
-   // prisma/schema.prisma
-   model User {
-     id            String   @id @default(cuid())
-     email         String   @unique
-     name          String?
-     organizations OrganizationMember[]
-     createdAt     DateTime @default(now())
-     updatedAt     DateTime @updatedAt
-   }
+You can see the layers of your entire page. To do that just navigate to the Layers tab where you can see your layers structure in a tree-like representation.
 
-   model Organization {
-     id            String   @id @default(cuid())
-     name          String
-     slug          String   @unique
-     members       OrganizationMember[]
-     customDomain  String?  @unique
-   }
+<p align="center">
+  <img src="https://github.com/denvudd/noire/assets/68691654/4689aab1-1a20-46c2-aa19-428476474a94" title="hover text">
+</p>
 
-   model OrganizationMember {
-     id             String       @id @default(cuid())
-     organization   Organization @relation(fields: [organizationId], references: [id])
-     organizationId String
-     user           User         @relation(fields: [userId], references: [id])
-     userId         String
-     role           Role         @default(MEMBER)
-     
-     @@unique([organizationId, userId])
-   }
-   ```
-   - Set up Prisma ORM with initial schema
-   - Configure NextAuth with email and OAuth providers
-   - Implement session management
-   - Create basic user model and migration
-   - Set up database backup system
+You can also upload media files (such as images) to the Media storage to use them in the Website Builder. To do this, navigate to the Media tab and select the file you want to upload.
 
-3. **Multi-tenancy Infrastructure**
-   ```typescript
-   // middleware.ts
-   import { createMiddleware } from '@/lib/middleware'
-   
-   export const middleware = createMiddleware({
-     // Match all paths except public ones
-     matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-   
-     async handler(req) {
-       const hostname = req.headers.get('host')
-       const subdomain = getSubdomain(hostname)
-       
-       // Handle routing based on subdomain/custom domain
-       const organization = await getOrganization(subdomain)
-       if (!organization) {
-         return new Response('Organization not found', { status: 404 })
-       }
-       
-       // Add organization to request context
-       req.organization = organization
-     }
-   })
-   ```
-   - Implement domain/subdomain routing
-   - Create middleware for organization context
-   - Set up organization resolution
-   - Implement custom domain handling
+<p align="center">
+  <img src="https://github.com/denvudd/noire/assets/68691654/21fd178d-11ea-4de8-af88-4dfbe87b0921" title="hover text">
+</p>
 
-### Phase 2: Core Platform Features
-1. **User Management System**
-   - Build user invitation flow
-   - Implement role-based access control
-   - Create user settings pages
-   - Add organization member management
-   - Implement user preferences
+## Kanban Board
+You can create new lanes and new tickets within them. It's possible to drag cards and lanes to change their order. You can create new tags and assign other users who have access to your team to specific tickets, as well as leave a contact link.
 
-2. **Organization Settings**
-   ```typescript
-   // app/[organization]/settings/page.tsx
-   export default function OrganizationSettings() {
-     const { organization } = useOrganization()
-     const updateOrganization = useMutation({
-       mutationFn: async (data: OrganizationUpdateData) => {
-         return await updateOrganizationSettings(organization.id, data)
-       }
-     })
-     
-     return (
-       <SettingsForm 
-         defaultValues={organization}
-         onSubmit={updateOrganization.mutate}
-       />
-     )
-   }
-   ```
-   - Create organization profile management
-   - Build billing settings
-   - Implement team settings
-   - Add integration settings
-   - Create audit log viewer
+![image](https://github.com/denvudd/noire/assets/68691654/b8dced27-9bac-4ebc-ae78-cdc6b4bf3159)
 
-3. **Dashboard & Navigation**
-   - Build responsive dashboard layout
-   - Implement sidebar navigation
-   - Create overview statistics
-   - Add quick action buttons
-   - Implement breadcrumb navigation
 
-### Phase 3: Financial Infrastructure
-1. **Stripe Integration**
-   - Set up Stripe Connect
-   - Implement subscription management
-   - Create webhook handlers
-   - Add payment processing
-   - Implement usage tracking
+![image](https://github.com/denvudd/noire/assets/68691654/bb52dc58-3d9f-4c3e-aac6-63cde7f40482)
 
-2. **Invoice System**
-   ```typescript
-   // lib/invoices/generator.ts
-   export class InvoiceGenerator {
-     async generate(data: InvoiceData) {
-       // Create invoice in database
-       const invoice = await prisma.invoice.create({
-         data: {
-           organizationId: data.organizationId,
-           amount: data.amount,
-           items: data.items,
-           dueDate: data.dueDate
-         }
-       })
-       
-       // Generate PDF
-       const pdf = await generateInvoicePDF(invoice)
-       
-       // Store in S3
-       await uploadToS3(pdf, `invoices/${invoice.id}.pdf`)
-       
-       return invoice
-     }
-   }
-   ```
-   - Create invoice generation system
-   - Implement invoice templates
-   - Build invoice management interface
-   - Add payment tracking
-   - Create payment reminders
+## Team Access
+If you've created an agency, you can create sub-accounts for that agency.
 
-3. **Budget Tracking**
-   - Implement expense categories
-   - Create budget allocation system
-   - Build financial reports
-   - Add spending alerts
-   - Create financial dashboard
+![image](https://github.com/denvudd/noire/assets/68691654/78c8ad3c-71f5-4bf7-bb02-81fd60d3eb58)
 
-### Phase 4: Project Infrastructure
-1. **Project Management**
-   - Create project CRUD operations
-   - Implement project settings
-   - Build project dashboard
-   - Add project member management
-   - Create project templates
+To grant access to another user for a sub-account of the agency, you can send them an invitation via email. 
 
-2. **Task Management**
-   ```typescript
-   // components/KanbanBoard/Column.tsx
-   export function KanbanColumn({ 
-     columnId, 
-     tasks 
-   }: KanbanColumnProps) {
-     return (
-       <Droppable droppableId={columnId}>
-         {(provided) => (
-           <div
-             ref={provided.innerRef}
-             {...provided.droppableProps}
-             className="kanban-column"
-           >
-             {tasks.map((task, index) => (
-               <DraggableTask 
-                 key={task.id} 
-                 task={task} 
-                 index={index} 
-               />
-             ))}
-             {provided.placeholder}
-           </div>
-         )}
-       </Droppable>
-     )
-   }
-   ```
-   - Build Kanban board
-   - Implement task assignments
-   - Create task templates
-   - Add time tracking
-   - Implement task dependencies
+![image](https://github.com/denvudd/noire/assets/68691654/5b072327-bf70-448c-b4b3-3bbbe20465e7)
 
-3. **Calendar & Scheduling**
-   - Build calendar views
-   - Implement event scheduling
-   - Create recurring events
-   - Add deadline tracking
-   - Implement calendar sharing
+If the user accepts the invitation to the agency, you can control their access to different sub-accounts.
 
-### Phase 5: Client Portal
-1. **Client Management**
-   - Create client profiles
-   - Build client onboarding flow
-   - Implement client access controls
-   - Add client communication system
-   - Create client dashboard
+<p align="center">
+  <img src="https://github.com/denvudd/noire/assets/68691654/bb863d94-9f66-4588-a393-6714e462709c)" title="hover text">
+</p>
 
-2. **Document Management**
-   ```typescript
-   // lib/documents/signing.ts
-   export class DocumentSigning {
-     async createSigningRequest(document: Document) {
-       const signingUrl = await generateSigningUrl(document)
-       
-       await prisma.signingRequest.create({
-         data: {
-           documentId: document.id,
-           status: 'PENDING',
-           expiresAt: addDays(new Date(), 7),
-           url: signingUrl
-         }
-       })
-       
-       return signingUrl
-     }
-   }
-   ```
-   - Implement document storage
-   - Build document signing
-   - Create document templates
-   - Add version control
-   - Implement document sharing
 
-3. **Support System**
-   - Build ticket system
-   - Create support dashboard
-   - Implement knowledge base
-   - Add ticket assignments
-   - Create SLA monitoring
 
-### Phase 6: Lead Management
-1. **Lead System**
-   - Create lead database
-   - Implement lead scoring
-   - Build lead nurturing
-   - Add lead assignment
-   - Create lead reporting
 
-2. **Automation Engine**
-   ```typescript
-   // lib/automation/engine.ts
-   export class AutomationEngine {
-     private async executeStep(step: WorkflowStep, context: WorkflowContext) {
-       switch (step.type) {
-         case 'trigger':
-           return this.handleTrigger(step, context)
-         case 'condition':
-           return this.evaluateCondition(step, context)
-         case 'action':
-           return this.executeAction(step, context)
-         default:
-           throw new Error(`Unknown step type: ${step.type}`)
-       }
-     }
-   }
-   ```
-   - Build workflow engine
-   - Implement action system
-   - Create trigger handlers
-   - Add condition evaluator
-   - Implement workflow testing
-
-3. **Integration Framework**
-   - Create webhook system
-   - Implement OAuth connections
-   - Build API integration
-   - Add event system
-   - Create integration marketplace
-
-### Phase 7: Analytics & Reporting
-1. **Analytics System**
-   - Implement event tracking
-   - Create metrics collection
-   - Build dashboard widgets
-   - Add custom reports
-   - Implement data export
-
-2. **Monitoring & Optimization**
-   ```typescript
-   // lib/monitoring/performance.ts
-   export class PerformanceMonitor {
-     async trackMetrics(metric: PerformanceMetric) {
-       await prisma.performanceLog.create({
-         data: {
-           metricName: metric.name,
-           value: metric.value,
-           timestamp: new Date(),
-           metadata: metric.metadata
-         }
-       })
-       
-       // Check thresholds
-       await this.checkAlertThresholds(metric)
-     }
-   }
-   ```
-   - Set up error tracking
-   - Implement performance monitoring
-   - Create health checks
-   - Add usage analytics
-   - Build admin dashboards
-
-## Deployment Strategy
-
-### Development Environment
-- Local PostgreSQL database
-- Local Redis instance
-- Mocked S3 storage
-- Stripe test mode
-
-### Staging Environment
-- Vercel Preview Deployments
-- Staging database cluster
-- Separate Redis instance
-- Test S3 bucket
-
-### Production Environment
-- Vercel Production Deployment
-- Production database cluster with replicas
-- Distributed Redis cluster
-- Production S3 bucket with CDN
-
-## Performance Optimization
-- Implement static page generation where possible
-- Use React Suspense for code splitting
-- Implement efficient caching strategies
-- Optimize database queries
-- Use Edge functions for global performance
-
-## Security Measures
-- Implement RBAC (Role-Based Access Control)
-- Set up CSP (Content Security Policy)
-- Configure rate limiting
-- Implement audit logging
-- Regular security scanning
