@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import PostCard from "./post-card";
 
 export default async function Posts({
-  siteId,
+  agencyId,
   limit,
 }: {
-  siteId?: string;
+  agencyId?: string;
   limit?: number;
 }) {
   const session = await getSession();
@@ -20,10 +20,10 @@ export default async function Posts({
     where: (posts, { and, eq }) =>
       and(
         eq(posts.userId, session.user.id),
-        siteId ? eq(posts.siteId, siteId) : undefined,
+        agencyId ? eq(posts.agencyId, agencyId) : undefined,
       ),
     with: {
-      site: true,
+      agency: true,
     },
     orderBy: (posts, { desc }) => desc(posts.updatedAt),
     ...(limit ? { limit } : {}),

@@ -1,36 +1,36 @@
 import Form from "@/components/form";
-import { updateSite } from "@/lib/actions";
-import DeleteSiteForm from "@/components/form/delete-site-form";
+import { updateAgency } from "@/lib/actions";
+import DeleteAgencyForm from "@/components/form/delete-agency-form";
 import db from "@/lib/db";
 
-export default async function SiteSettingsIndex({
+export default async function AgencySettingsIndex({
   params,
 }: {
   params: { id: string };
 }) {
-  const data = await db.query.sites.findFirst({
-    where: (sites, { eq }) => eq(sites.id, decodeURIComponent(params.id)),
+  const data = await db.query.agencies.findFirst({
+    where: (agencies, { eq }) => eq(agencies.id, decodeURIComponent(params.id)),
   });
 
   return (
     <div className="flex flex-col space-y-6">
       <Form
         title="Name"
-        description="The name of your site. This will be used as the meta title on Google as well."
+        description="The name of your agency. This will be used as the meta title on Google as well."
         helpText="Please use 32 characters maximum."
         inputAttrs={{
           name: "name",
           type: "text",
           defaultValue: data?.name!,
-          placeholder: "My Awesome Site",
+          placeholder: "My Awesome Agency",
           maxLength: 32,
         }}
-        handleSubmit={updateSite}
+        handleSubmit={updateAgency}
       />
 
       <Form
         title="Description"
-        description="The description of your site. This will be used as the meta description on Google as well."
+        description="The description of your agency. This will be used as the meta description on Google as well."
         helpText="Include SEO-optimized keywords that you want to rank for."
         inputAttrs={{
           name: "description",
@@ -38,10 +38,10 @@ export default async function SiteSettingsIndex({
           defaultValue: data?.description!,
           placeholder: "A blog about really interesting things.",
         }}
-        handleSubmit={updateSite}
+        handleSubmit={updateAgency}
       />
 
-      <DeleteSiteForm siteName={data?.name!} />
+      <DeleteAgencyForm agencyName={data?.name!} />
     </div>
   );
 }

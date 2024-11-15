@@ -5,25 +5,25 @@ import { cn } from "@/lib/utils";
 import { useParams, useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
-import { deleteSite } from "@/lib/actions";
+import { deleteAgency } from "@/lib/actions";
 import va from "@vercel/analytics";
 
-export default function DeleteSiteForm({ siteName }: { siteName: string }) {
+export default function DeleteAgencyForm({ agencyName }: { agencyName: string }) {
   const { id } = useParams() as { id: string };
   const router = useRouter();
   return (
     <form
       action={async (data: FormData) =>
-        window.confirm("Are you sure you want to delete your site?") &&
-        deleteSite(data, id, "delete")
+        window.confirm("Are you sure you want to delete your agency?") &&
+        deleteAgency(data, id, "delete")
           .then(async (res) => {
             if (res.error) {
               toast.error(res.error);
             } else {
-              va.track("Deleted Site");
+              va.track("Deleted Agency");
               router.refresh();
-              router.push("/sites");
-              toast.success(`Successfully deleted site!`);
+              router.push("/agencies");
+              toast.success(`Successfully deleted agency!`);
             }
           })
           .catch((err: Error) => toast.error(err.message))
@@ -31,18 +31,18 @@ export default function DeleteSiteForm({ siteName }: { siteName: string }) {
       className="rounded-lg border border-red-600 bg-white dark:bg-black"
     >
       <div className="relative flex flex-col space-y-4 p-5 sm:p-10">
-        <h2 className="font-cal text-xl dark:text-white">Delete Site</h2>
+        <h2 className="font-cal text-xl dark:text-white">Delete Agency</h2>
         <p className="text-sm text-stone-500 dark:text-stone-400">
-          Deletes your site and all posts associated with it. Type in the name
-          of your site <b>{siteName}</b> to confirm.
+          Deletes your agency and all posts associated with it. Type in the name
+          of your agency <b>{agencyName}</b> to confirm.
         </p>
 
         <input
           name="confirm"
           type="text"
           required
-          pattern={siteName}
-          placeholder={siteName}
+          pattern={agencyName}
+          placeholder={agencyName}
           className="w-full max-w-md rounded-md border border-stone-300 text-sm text-stone-900 placeholder-stone-300 focus:border-stone-500 focus:outline-none focus:ring-stone-500 dark:border-stone-600 dark:bg-black dark:text-white dark:placeholder-stone-700"
         />
       </div>

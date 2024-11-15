@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { getPostData, getSiteData } from "@/lib/fetchers";
+import { getPostData, getAgencyData } from "@/lib/fetchers";
 import BlogCard from "@/components/blog-card";
 import BlurImage from "@/components/blur-image";
 import MDX from "@/components/mdx";
 import { placeholderBlurhash, toDateString } from "@/lib/utils";
 import db from "@/lib/db";
-import { posts, sites } from "@/lib/schema";
+import { posts, agencies } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
 export async function generateMetadata({
@@ -16,11 +16,11 @@ export async function generateMetadata({
   const domain = decodeURIComponent(params.domain);
   const slug = decodeURIComponent(params.slug);
 
-  const [data, siteData] = await Promise.all([
+  const [data, agencyData] = await Promise.all([
     getPostData(domain, slug),
-    getSiteData(domain),
+    getAgencyData(domain),
   ]);
-  if (!data || !siteData) {
+  if (!data || !agencyData) {
     return null;
   }
   const { title, description } = data;
@@ -40,9 +40,9 @@ export async function generateMetadata({
     },
     // Optional: Set canonical URL to custom domain if it exists
     // ...(params.domain.endsWith(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) &&
-    //   siteData.customDomain && {
+    //   agencyData.customDomain && {
     //     alternates: {
-    //       canonical: `https://${siteData.customDomain}/${params.slug}`,
+    //       canonical: `https://${agencyData.customDomain}/${params.slug}`,
     //     },
     //   }),
   };
@@ -52,23 +52,23 @@ export async function generateStaticParams() {
   const allPosts = await db
     .select({
       slug: posts.slug,
-      site: {
-        subdomain: sites.subdomain,
-        customDomain: sites.customDomain,
+      agency: {
+        subdomain: agencies.subdomain,
+        customDomain: agencies.customDomain,
       },
     })
     .from(posts)
-    .leftJoin(sites, eq(posts.siteId, sites.id))
-    .where(eq(sites.subdomain, "demo")); // feel free to remove this filter if you want to generate paths for all posts
+    .leftJoin(agencies, eq(posts.agencyId, agencies.id))
+    .where(eq(agencies.subdomain, "demo")); // feel free to remove this filter if you want to generate paths for all posts
 
   const allPaths = allPosts
-    .flatMap(({ site, slug }) => [
-      site?.subdomain && {
-        domain: `${site.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
+    .flatMap(({ agency, slug }) => [
+      agency?.subdomain && {
+        domain: `${agency.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
         slug,
       },
-      site?.customDomain && {
-        domain: site.customDomain,
+      agency?.customDomain && {
+        domain: agency.customDomain,
         slug,
       },
     ])
@@ -77,7 +77,7 @@ export async function generateStaticParams() {
   return allPaths;
 }
 
-export default async function SitePostPage({
+export default async function AgencyPostPage({
   params,
 }: {
   params: { domain: string; slug: string };
@@ -107,20 +107,20 @@ export default async function SitePostPage({
         <a
           // if you are using Github OAuth, you can get rid of the Twitter option
           href={
-            data.site?.user?.username
-              ? `https://twitter.com/${data.site.user.username}`
-              : `https://github.com/${data.site?.user?.gh_username}`
+            data.agency?.user?.username
+              ? `https://twitter.com/${data.agency.user.username}`
+              : `https://github.com/${data.agency?.user?.gh_username}`
           }
           rel="noreferrer"
           target="_blank"
         >
           <div className="my-8">
             <div className="relative inline-block h-8 w-8 overflow-hidden rounded-full align-middle md:h-12 md:w-12">
-              {data.site?.user?.image ? (
+              {data.agency?.user?.image ? (
                 <BlurImage
-                  alt={data.site?.user?.name ?? "User Avatar"}
+                  alt={data.agency?.user?.name ?? "User Avatar"}
                   height={80}
-                  src={data.site.user.image}
+                  src={data.agency.user.image}
                   width={80}
                 />
               ) : (
@@ -130,7 +130,7 @@ export default async function SitePostPage({
               )}
             </div>
             <div className="text-md ml-3 inline-block align-middle md:text-lg dark:text-white">
-              by <span className="font-semibold">{data.site?.user?.name}</span>
+              by <span className="font-semibold">{data.agency?.user?.name}</span>
             </div>
           </div>
         </a>

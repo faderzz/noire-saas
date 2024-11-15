@@ -12,7 +12,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
   const data = await db.query.posts.findFirst({
     where: (posts, { eq }) => eq(posts.id, decodeURIComponent(params.id)),
     with: {
-      site: {
+      agency: {
         columns: {
           subdomain: true,
         },

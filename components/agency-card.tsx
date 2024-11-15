@@ -1,15 +1,15 @@
 import BlurImage from "@/components/blur-image";
-import type { SelectSite } from "@/lib/schema";
+import type { SelectAgency } from "@/lib/schema";
 import { placeholderBlurhash, random } from "@/lib/utils";
 import { BarChart, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
-export default function SiteCard({ data }: { data: SelectSite }) {
+export default function AgencyCard({ data }: { data: SelectAgency }) {
   const url = `${data.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
   return (
     <div className="relative rounded-lg border border-stone-200 pb-10 shadow-md transition-all hover:shadow-xl dark:border-stone-700 dark:hover:border-white">
       <Link
-        href={`/site/${data.id}`}
+        href={`/agency/${data.id}`}
         className="flex flex-col overflow-hidden rounded-lg"
       >
         <BlurImage
@@ -44,7 +44,7 @@ export default function SiteCard({ data }: { data: SelectSite }) {
           {url} ↗
         </a>
         <Link
-          href={`/site/${data.id}/analytics`}
+          href={`/agency/${data.id}/analytics`}
           className="flex items-center rounded-md bg-green-100 px-2 py-1 text-sm font-medium text-green-600 transition-colors hover:bg-green-200 dark:bg-green-900 dark:bg-opacity-50 dark:text-green-400 dark:hover:bg-green-800 dark:hover:bg-opacity-50"
         >
           <BarChart height={16} />

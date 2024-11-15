@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import AnalyticsMockup from "@/components/analytics";
 import db from "@/lib/db";
 
-export default async function SiteAnalytics({
+export default async function AgencyAnalytics({
   params,
 }: {
   params: { id: string };
@@ -12,8 +12,8 @@ export default async function SiteAnalytics({
   if (!session) {
     redirect("/login");
   }
-  const data = await db.query.sites.findFirst({
-    where: (sites, { eq }) => eq(sites.id, decodeURIComponent(params.id)),
+  const data = await db.query.agencies.findFirst({
+    where: (agencies, { eq }) => eq(agencies.id, decodeURIComponent(params.id)),
   });
 
   if (!data || data.userId !== session.user.id) {

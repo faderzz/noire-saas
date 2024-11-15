@@ -1,21 +1,21 @@
 import { unstable_cache } from "next/cache";
 import db from "./db";
 import { and, desc, eq, not } from "drizzle-orm";
-import { posts, sites, users } from "./schema";
+import { posts, agencies, users } from "./schema";
 import { serialize } from "next-mdx-remote/serialize";
 import { replaceExamples, replaceTweets } from "@/lib/remark-plugins";
 
-export async function getSiteData(domain: string) {
+export async function getAgencyData(domain: string) {
   const subdomain = domain.endsWith(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`)
     ? domain.replace(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`, "")
     : null;
 
   return await unstable_cache(
     async () => {
-      return await db.query.sites.findFirst({
+      return await db.query.agencies.findFirst({
         where: subdomain
-          ? eq(sites.subdomain, subdomain)
-          : eq(sites.customDomain, domain),
+          ? eq(agencies.subdomain, subdomain)
+          : eq(agencies.customDomain, domain),
         with: {
           user: true,
         },
@@ -29,7 +29,7 @@ export async function getSiteData(domain: string) {
   )();
 }
 
-export async function getPostsForSite(domain: string) {
+export async function getPostsForAgency(domain: string) {
   const subdomain = domain.endsWith(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`)
     ? domain.replace(`.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`, "")
     : null;
@@ -46,13 +46,13 @@ export async function getPostsForSite(domain: string) {
           createdAt: posts.createdAt,
         })
         .from(posts)
-        .leftJoin(sites, eq(posts.siteId, sites.id))
+        .leftJoin(agencies, eq(posts.agencyId, agencies.id))
         .where(
           and(
             eq(posts.published, true),
             subdomain
-              ? eq(sites.subdomain, subdomain)
-              : eq(sites.customDomain, domain),
+              ? eq(agencies.subdomain, subdomain)
+              : eq(agencies.customDomain, domain),
           ),
         )
         .orderBy(desc(posts.createdAt));
@@ -75,28 +75,28 @@ export async function getPostData(domain: string, slug: string) {
       const data = await db
         .select({
           post: posts,
-          site: sites,
+          agency: agencies,
           user: users,
         })
         .from(posts)
-        .leftJoin(sites, eq(sites.id, posts.siteId))
-        .leftJoin(users, eq(users.id, sites.userId))
+        .leftJoin(agencies, eq(agencies.id, posts.agencyId))
+        .leftJoin(users, eq(users.id, agencies.userId))
         .where(
           and(
             eq(posts.slug, slug),
             eq(posts.published, true),
             subdomain
-              ? eq(sites.subdomain, subdomain)
-              : eq(sites.customDomain, domain),
+              ? eq(agencies.subdomain, subdomain)
+              : eq(agencies.customDomain, domain),
           ),
         )
         .then((res) =>
           res.length > 0
             ? {
                 ...res[0].post,
-                site: res[0].site
+                agency: res[0].agency
                   ? {
-                      ...res[0].site,
+                      ...res[0].agency,
                       user: res[0].user,
                     }
                   : null,
@@ -118,14 +118,14 @@ export async function getPostData(domain: string, slug: string) {
             imageBlurhash: posts.imageBlurhash,
           })
           .from(posts)
-          .leftJoin(sites, eq(sites.id, posts.siteId))
+          .leftJoin(agencies, eq(agencies.id, posts.agencyId))
           .where(
             and(
               eq(posts.published, true),
               not(eq(posts.id, data.id)),
               subdomain
-                ? eq(sites.subdomain, subdomain)
-                : eq(sites.customDomain, domain),
+                ? eq(agencies.subdomain, subdomain)
+                : eq(agencies.customDomain, domain),
             ),
           ),
       ]);

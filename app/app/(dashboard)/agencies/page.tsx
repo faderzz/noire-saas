@@ -1,20 +1,20 @@
 import { Suspense } from "react";
-import Sites from "@/components/sites";
+import Agencies from "@/components/agencies";
 import PlaceholderCard from "@/components/placeholder-card";
-import CreateSiteButton from "@/components/create-site-button";
-import CreateSiteModal from "@/components/modal/create-site";
+import CreateAgencyButton from "@/components/create-agency-button";
+import CreateAgencyModal from "@/components/modal/create-agency";
 
-export default function AllSites({ params }: { params: { id: string } }) {
+export default function AllAgencies({ params }: { params: { id: string } }) {
   return (
     <div className="flex max-w-screen-xl flex-col space-y-12 p-8">
       <div className="flex flex-col space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="font-cal text-3xl font-bold dark:text-white">
-            All Sites
+            All Agencies
           </h1>
-          <CreateSiteButton>
-            <CreateSiteModal />
-          </CreateSiteButton>
+          <CreateAgencyButton>
+            <CreateAgencyModal />
+          </CreateAgencyButton>
         </div>
         <Suspense
           fallback={
@@ -26,7 +26,7 @@ export default function AllSites({ params }: { params: { id: string } }) {
           }
         >
           {/* @ts-expect-error Server Component */}
-          <Sites siteId={decodeURIComponent(params.id)} />
+          <Agencies agencyId={decodeURIComponent(params.id)} />
         </Suspense>
       </div>
     </div>

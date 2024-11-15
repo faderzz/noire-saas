@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { getPostsForSite } from "@/lib/fetchers";
+import { getPostsForAgency } from "@/lib/fetchers";
 
 export default async function Sitemap() {
   const headersList = headers();
@@ -9,7 +9,7 @@ export default async function Sitemap() {
       ?.replace(".localhost:3000", `.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`) ??
     "vercel.pub";
 
-  const posts = await getPostsForSite(domain);
+  const posts = await getPostsForAgency(domain);
 
   return [
     {

@@ -133,8 +133,8 @@ export const sessions = pgTable(
   },
 );
 
-export const sites = pgTable(
-  "Site",
+export const agencies = pgTable(
+  "Agency",
   {
     id: text("id")
       .primaryKey()
@@ -167,15 +167,15 @@ export const sites = pgTable(
   },
   (table) => {
     return {
-      subdomainKey: uniqueIndex("Site_subdomain_key").on(table.subdomain),
-      customDomainKey: uniqueIndex("Site_customDomain_key").on(
+      subdomainKey: uniqueIndex("Agency_subdomain_key").on(table.subdomain),
+      customDomainKey: uniqueIndex("Agency_customDomain_key").on(
         table.customDomain,
       ),
-      userIdIdx: index("Site_userId_idx").on(table.userId),
+      userIdIdx: index("Agency_userId_idx").on(table.userId),
       userFk: foreignKey({
         columns: [table.userId],
         foreignColumns: [users.id],
-        name: "Site_userId_fkey",
+        name: "Agency_userId_fkey",
       })
         .onDelete("cascade")
         .onUpdate("cascade"),
@@ -209,16 +209,16 @@ export const posts = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
     published: boolean("published").default(false).notNull(),
-    siteId: text("siteId"),
+    agencyId: text("agencyId"),
     userId: text("userId"),
   },
   (table) => {
     return {
-      siteIdIdx: index("Post_siteId_idx").on(table.siteId),
+      agencyIdIdx: index("Post_agencyId_idx").on(table.agencyId),
       userIdIdx: index("Post_userId_idx").on(table.userId),
-      slugSiteIdKey: uniqueIndex("Post_slug_siteId_key").on(
+      slugAgencyIdKey: uniqueIndex("Post_slug_agencyId_key").on(
         table.slug,
-        table.siteId,
+        table.agencyId,
       ),
       userFk: foreignKey({
         columns: [table.userId],
@@ -227,10 +227,10 @@ export const posts = pgTable(
       })
         .onDelete("cascade")
         .onUpdate("cascade"),
-      siteFk: foreignKey({
-        columns: [table.siteId],
-        foreignColumns: [sites.id],
-        name: "Post_siteId_fkey",
+      agencyFk: foreignKey({
+        columns: [table.agencyId],
+        foreignColumns: [agencies.id],
+        name: "Post_agencyId_fkey",
       })
         .onDelete("cascade")
         .onUpdate("cascade"),
@@ -239,13 +239,13 @@ export const posts = pgTable(
 );
 
 export const postsRelations = relations(posts, ({ one }) => ({
-  site: one(sites, { references: [sites.id], fields: [posts.siteId] }),
+  agency: one(agencies, { references: [agencies.id], fields: [posts.agencyId] }),
   user: one(users, { references: [users.id], fields: [posts.userId] }),
 }));
 
-export const sitesRelations = relations(sites, ({ one, many }) => ({
+export const agenciesRelations = relations(agencies, ({ one, many }) => ({
   posts: many(posts),
-  user: one(users, { references: [users.id], fields: [sites.userId] }),
+  user: one(users, { references: [users.id], fields: [agencies.userId] }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -259,10 +259,10 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const userRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
-  sites: many(sites),
+  agencies: many(agencies),
   posts: many(posts),
 }));
 
-export type SelectSite = typeof sites.$inferSelect;
+export type SelectAgency = typeof agencies.$inferSelect;
 export type SelectPost = typeof posts.$inferSelect;
 export type SelectExample = typeof examples.$inferSelect;

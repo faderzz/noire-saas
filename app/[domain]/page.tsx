@@ -3,21 +3,21 @@ import { notFound } from "next/navigation";
 import BlurImage from "@/components/blur-image";
 import { placeholderBlurhash, toDateString } from "@/lib/utils";
 import BlogCard from "@/components/blog-card";
-import { getPostsForSite, getSiteData } from "@/lib/fetchers";
+import { getPostsForAgency, getAgencyData } from "@/lib/fetchers";
 import Image from "next/image";
 import db from "@/lib/db";
 
 export async function generateStaticParams() {
-  const allSites = await db.query.sites.findMany({
-    // feel free to remove this filter if you want to generate paths for all sites
-    where: (sites, { eq }) => eq(sites.subdomain, "demo"),
+  const allAgencies = await db.query.agencies.findMany({
+    // feel free to remove this filter if you want to generate paths for all agencies
+    where: (agencies, { eq }) => eq(agencies.subdomain, "demo"),
     columns: {
       subdomain: true,
       customDomain: true,
     },
   });
 
-  const allPaths = allSites
+  const allPaths = allAgencies
     .flatMap(({ subdomain, customDomain }) => [
       subdomain && {
         domain: `${subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
@@ -31,15 +31,15 @@ export async function generateStaticParams() {
   return allPaths;
 }
 
-export default async function SiteHomePage({
+export default async function AgencyHomePage({
   params,
 }: {
   params: { domain: string };
 }) {
   const domain = decodeURIComponent(params.domain);
   const [data, posts] = await Promise.all([
-    getSiteData(domain),
-    getPostsForSite(domain),
+    getAgencyData(domain),
+    getPostsForAgency(domain),
   ]);
 
   if (!data) {

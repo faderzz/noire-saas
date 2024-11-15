@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { createSite } from "@/lib/actions";
+import { createAgency } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ import { useModal } from "./provider";
 import va from "@vercel/analytics";
 import { useEffect, useState } from "react";
 
-export default function CreateSiteModal() {
+export default function CreateAgencyModal() {
   const router = useRouter();
   const modal = useModal();
 
@@ -33,35 +33,35 @@ export default function CreateSiteModal() {
   return (
     <form
       action={async (data: FormData) =>
-        createSite(data).then((res: any) => {
+        createAgency(data).then((res: any) => {
           if (res.error) {
             toast.error(res.error);
           } else {
-            va.track("Created Site");
+            va.track("Created Agency");
             const { id } = res;
             router.refresh();
-            router.push(`/site/${id}`);
+            router.push(`/agency/${id}`);
             modal?.hide();
-            toast.success(`Successfully created site!`);
+            toast.success(`Successfully created agency!`);
           }
         })
       }
       className="w-full rounded-md bg-white md:max-w-md md:border md:border-stone-200 md:shadow dark:bg-black dark:md:border-stone-700"
     >
       <div className="relative flex flex-col space-y-4 p-5 md:p-10">
-        <h2 className="font-cal text-2xl dark:text-white">Create a new site</h2>
+        <h2 className="font-cal text-2xl dark:text-white">Create a new agency</h2>
 
         <div className="flex flex-col space-y-2">
           <label
             htmlFor="name"
             className="text-sm font-medium text-stone-500 dark:text-stone-400"
           >
-            Site Name
+            Agency Name
           </label>
           <input
             name="name"
             type="text"
-            placeholder="My Awesome Site"
+            placeholder="My Awesome Agency"
             autoFocus
             value={data.name}
             onChange={(e) => setData({ ...data, name: e.target.value })}
@@ -106,7 +106,7 @@ export default function CreateSiteModal() {
           </label>
           <textarea
             name="description"
-            placeholder="Description about why my site is so awesome"
+            placeholder="Description about why my agency is so awesome"
             value={data.description}
             onChange={(e) => setData({ ...data, description: e.target.value })}
             maxLength={140}
@@ -116,12 +116,12 @@ export default function CreateSiteModal() {
         </div>
       </div>
       <div className="flex items-center justify-end rounded-b-lg border-t border-stone-200 bg-stone-50 p-3 md:px-10 dark:border-stone-700 dark:bg-stone-800">
-        <CreateSiteFormButton />
+        <CreateAgencyFormButton />
       </div>
     </form>
   );
 }
-function CreateSiteFormButton() {
+function CreateAgencyFormButton() {
   const { pending } = useFormStatus();
   return (
     <button
@@ -133,7 +133,7 @@ function CreateSiteFormButton() {
       )}
       disabled={pending}
     >
-      {pending ? <LoadingDots color="#808080" /> : <p>Create Site</p>}
+      {pending ? <LoadingDots color="#808080" /> : <p>Create Agency</p>}
     </button>
   );
 }

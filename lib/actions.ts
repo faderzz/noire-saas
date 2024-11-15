@@ -11,16 +11,16 @@ import { put } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { customAlphabet } from "nanoid";
 import { revalidateTag } from "next/cache";
-import { withPostAuth, withSiteAuth } from "./auth";
+import { withPostAuth, withAgencyAuth } from "./auth";
 import db from "./db";
-import { SelectPost, SelectSite, posts, sites, users } from "./schema";
+import { SelectPost, SelectAgency, posts, agencies, users } from "./schema";
 
 const nanoid = customAlphabet(
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
   7,
 ); // 7-character random string
 
-export const createSite = async (formData: FormData) => {
+export const createAgency = async (formData: FormData) => {
   const session = await getSession();
   if (!session?.user.id) {
     return {
@@ -33,7 +33,7 @@ export const createSite = async (formData: FormData) => {
 
   try {
     const [response] = await db
-      .insert(sites)
+      .insert(agencies)
       .values({
         name,
         description,
@@ -59,8 +59,8 @@ export const createSite = async (formData: FormData) => {
   }
 };
 
-export const updateSite = withSiteAuth(
-  async (formData: FormData, site: SelectSite, key: string) => {
+export const updateAgency = withAgencyAuth(
+  async (formData: FormData, agency: SelectAgency, key: string) => {
     const value = formData.get(key) as string;
 
     try {
@@ -75,11 +75,11 @@ export const updateSite = withSiteAuth(
           // if the custom domain is valid, we need to add it to Vercel
         } else if (validDomainRegex.test(value)) {
           response = await db
-            .update(sites)
+            .update(agencies)
             .set({
               customDomain: value,
             })
-            .where(eq(sites.id, site.id))
+            .where(eq(agencies.id, agency.id))
             .returning()
             .then((res) => res[0]);
 
@@ -92,35 +92,35 @@ export const updateSite = withSiteAuth(
           // empty value means the user wants to remove the custom domain
         } else if (value === "") {
           response = await db
-            .update(sites)
+            .update(agencies)
             .set({
               customDomain: null,
             })
-            .where(eq(sites.id, site.id))
+            .where(eq(agencies.id, agency.id))
             .returning()
             .then((res) => res[0]);
         }
 
-        // if the site had a different customDomain before, we need to remove it from Vercel
-        if (site.customDomain && site.customDomain !== value) {
-          response = await removeDomainFromVercelProject(site.customDomain);
+        // if the agency had a different customDomain before, we need to remove it from Vercel
+        if (agency.customDomain && agency.customDomain !== value) {
+          response = await removeDomainFromVercelProject(agency.customDomain);
 
           /* Optional: remove domain from Vercel team 
 
-          // first, we need to check if the apex domain is being used by other sites
-          const apexDomain = getApexDomain(`https://${site.customDomain}`);
-          const domainCount = await db.select({ count: count() }).from(sites).where(or(eq(sites.customDomain, apexDomain), ilike(sites.customDomain, `%.${apexDomain}`))).then((res) => res[0].count);
+          // first, we need to check if the apex domain is being used by other agencies
+          const apexDomain = getApexDomain(`https://${agency.customDomain}`);
+          const domainCount = await db.select({ count: count() }).from(agencies).where(or(eq(agencies.customDomain, apexDomain), ilike(agencies.customDomain, `%.${apexDomain}`))).then((res) => res[0].count);
 
 
-          // if the apex domain is being used by other sites
+          // if the apex domain is being used by other agencies
           // we should only remove it from our Vercel project
           if (domainCount >= 1) {
-            await removeDomainFromVercelProject(site.customDomain);
+            await removeDomainFromVercelProject(agency.customDomain);
           } else {
-            // this is the only site using this apex domain
+            // this is the only agency using this apex domain
             // so we can remove it entirely from our Vercel team
             await removeDomainFromVercelTeam(
-              site.customDomain
+              agency.customDomain
             );
           }
           
@@ -144,34 +144,34 @@ export const updateSite = withSiteAuth(
         const blurhash = key === "image" ? await getBlurDataURL(url) : null;
 
         response = await db
-          .update(sites)
+          .update(agencies)
           .set({
             [key]: url,
             ...(blurhash && { imageBlurhash: blurhash }),
           })
-          .where(eq(sites.id, site.id))
+          .where(eq(agencies.id, agency.id))
           .returning()
           .then((res) => res[0]);
       } else {
         response = await db
-          .update(sites)
+          .update(agencies)
           .set({
             [key]: value,
           })
-          .where(eq(sites.id, site.id))
+          .where(eq(agencies.id, agency.id))
           .returning()
           .then((res) => res[0]);
       }
 
       console.log(
-        "Updated site data! Revalidating tags: ",
-        `${site.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-metadata`,
-        `${site.customDomain}-metadata`,
+        "Updated agency data! Revalidating tags: ",
+        `${agency.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-metadata`,
+        `${agency.customDomain}-metadata`,
       );
       revalidateTag(
-        `${site.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-metadata`,
+        `${agency.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-metadata`,
       );
-      site.customDomain && revalidateTag(`${site.customDomain}-metadata`);
+      agency.customDomain && revalidateTag(`${agency.customDomain}-metadata`);
 
       return response;
     } catch (error: any) {
@@ -188,18 +188,18 @@ export const updateSite = withSiteAuth(
   },
 );
 
-export const deleteSite = withSiteAuth(
-  async (_: FormData, site: SelectSite) => {
+export const deleteAgency = withAgencyAuth(
+  async (_: FormData, agency: SelectAgency) => {
     try {
       const [response] = await db
-        .delete(sites)
-        .where(eq(sites.id, site.id))
+        .delete(agencies)
+        .where(eq(agencies.id, agency.id))
         .returning();
 
       revalidateTag(
-        `${site.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-metadata`,
+        `${agency.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-metadata`,
       );
-      response.customDomain && revalidateTag(`${site.customDomain}-metadata`);
+      response.customDomain && revalidateTag(`${agency.customDomain}-metadata`);
       return response;
     } catch (error: any) {
       return {
@@ -209,19 +209,19 @@ export const deleteSite = withSiteAuth(
   },
 );
 
-export const getSiteFromPostId = async (postId: string) => {
+export const getAgencyFromPostId = async (postId: string) => {
   const post = await db.query.posts.findFirst({
     where: eq(posts.id, postId),
     columns: {
-      siteId: true,
+      agencyId: true,
     },
   });
 
-  return post?.siteId;
+  return post?.agencyId;
 };
 
-export const createPost = withSiteAuth(
-  async (_: FormData, site: SelectSite) => {
+export const createPost = withAgencyAuth(
+  async (_: FormData, agency: SelectAgency) => {
     const session = await getSession();
     if (!session?.user.id) {
       return {
@@ -232,15 +232,15 @@ export const createPost = withSiteAuth(
     const [response] = await db
       .insert(posts)
       .values({
-        siteId: site.id,
+        agencyId: agency.id,
         userId: session.user.id,
       })
       .returning();
 
     revalidateTag(
-      `${site.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
+      `${agency.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
     );
-    site.customDomain && revalidateTag(`${site.customDomain}-posts`);
+    agency.customDomain && revalidateTag(`${agency.customDomain}-posts`);
 
     return response;
   },
@@ -258,7 +258,7 @@ export const updatePost = async (data: SelectPost) => {
   const post = await db.query.posts.findFirst({
     where: eq(posts.id, data.id),
     with: {
-      site: true,
+      agency: true,
     },
   });
 
@@ -280,16 +280,16 @@ export const updatePost = async (data: SelectPost) => {
       .returning();
 
     revalidateTag(
-      `${post.site?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
+      `${post.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
     );
     revalidateTag(
-      `${post.site?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-${post.slug}`,
+      `${post.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-${post.slug}`,
     );
 
-    // if the site has a custom domain, we need to revalidate those tags too
-    post.site?.customDomain &&
-      (revalidateTag(`${post.site?.customDomain}-posts`),
-      revalidateTag(`${post.site?.customDomain}-${post.slug}`));
+    // if the agency has a custom domain, we need to revalidate those tags too
+    post.agency?.customDomain &&
+      (revalidateTag(`${post.agency?.customDomain}-posts`),
+      revalidateTag(`${post.agency?.customDomain}-${post.slug}`));
 
     return response;
   } catch (error: any) {
@@ -303,7 +303,7 @@ export const updatePostMetadata = withPostAuth(
   async (
     formData: FormData,
     post: SelectPost & {
-      site: SelectSite;
+      agency: SelectAgency;
     },
     key: string,
   ) => {
@@ -341,16 +341,16 @@ export const updatePostMetadata = withPostAuth(
       }
 
       revalidateTag(
-        `${post.site?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
+        `${post.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
       );
       revalidateTag(
-        `${post.site?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-${post.slug}`,
+        `${post.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-${post.slug}`,
       );
 
-      // if the site has a custom domain, we need to revalidate those tags too
-      post.site?.customDomain &&
-        (revalidateTag(`${post.site?.customDomain}-posts`),
-        revalidateTag(`${post.site?.customDomain}-${post.slug}`));
+      // if the agency has a custom domain, we need to revalidate those tags too
+      post.agency?.customDomain &&
+        (revalidateTag(`${post.agency?.customDomain}-posts`),
+        revalidateTag(`${post.agency?.customDomain}-${post.slug}`));
 
       return response;
     } catch (error: any) {
@@ -374,7 +374,7 @@ export const deletePost = withPostAuth(
         .delete(posts)
         .where(eq(posts.id, post.id))
         .returning({
-          siteId: posts.siteId,
+          agencyId: posts.agencyId,
         });
 
       return response;

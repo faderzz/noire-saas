@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
 import { getSession } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
-import SiteSettingsNav from "./nav";
+import AgencySettingsNav from "./nav";
 import db from "@/lib/db";
 
-export default async function SiteAnalyticsLayout({
+export default async function AgencyAnalyticsLayout({
   params,
   children,
 }: {
@@ -15,8 +15,8 @@ export default async function SiteAnalyticsLayout({
   if (!session) {
     redirect("/login");
   }
-  const data = await db.query.sites.findFirst({
-    where: (sites, { eq }) => eq(sites.id, decodeURIComponent(params.id)),
+  const data = await db.query.agencies.findFirst({
+    where: (agencies, { eq }) => eq(agencies.id, decodeURIComponent(params.id)),
   });
 
   if (!data || data.userId !== session.user.id) {
@@ -44,7 +44,7 @@ export default async function SiteAnalyticsLayout({
           {url} ↗
         </a>
       </div>
-      <SiteSettingsNav />
+      <AgencySettingsNav />
       {children}
     </>
   );

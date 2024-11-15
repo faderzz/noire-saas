@@ -40,7 +40,7 @@ export default function CTA() {
             closeCTA ? "hidden lg:block" : ""
           } mt-2 text-sm text-stone-700 lg:mt-0 dark:text-stone-300`}
         >
-          This is a demo site showcasing how to build a multi-tenant application
+          This is a demo agency showcasing how to build a multi-tenant application
           with{" "}
           <a
             className="font-semibold text-black underline dark:text-white"

@@ -54,7 +54,7 @@ export const verificationTokens = pgTable(
   },
   (table) => {
     return {
-      compositePk: primaryKey({ columns: [table.identifier, table.token] }),
+      compoagencyPk: primaryKey({ columns: [table.identifier, table.token] }),
     };
   },
 );
@@ -92,15 +92,15 @@ export const accounts = pgTable(
   (table) => {
     return {
       userIdIdx: index().on(table.userId),
-      compositePk: primaryKey({
+      compoagencyPk: primaryKey({
         columns: [table.provider, table.providerAccountId],
       }),
     };
   },
 );
 
-export const sites = pgTable(
-  "sites",
+export const agencies = pgTable(
+  "agencies",
   {
     id: text("id")
       .primaryKey()
@@ -161,7 +161,7 @@ export const posts = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
     published: boolean("published").default(false).notNull(),
-    siteId: text("siteId").references(() => sites.id, {
+    agencyId: text("agencyId").references(() => agencies.id, {
       onDelete: "cascade",
       onUpdate: "cascade",
     }),
@@ -172,21 +172,21 @@ export const posts = pgTable(
   },
   (table) => {
     return {
-      siteIdIdx: index().on(table.siteId),
+      agencyIdIdx: index().on(table.agencyId),
       userIdIdx: index().on(table.userId),
-      slugSiteIdKey: uniqueIndex().on(table.slug, table.siteId),
+      slugAgencyIdKey: uniqueIndex().on(table.slug, table.agencyId),
     };
   },
 );
 
 export const postsRelations = relations(posts, ({ one }) => ({
-  site: one(sites, { references: [sites.id], fields: [posts.siteId] }),
+  agency: one(agencies, { references: [agencies.id], fields: [posts.agencyId] }),
   user: one(users, { references: [users.id], fields: [posts.userId] }),
 }));
 
-export const sitesRelations = relations(sites, ({ one, many }) => ({
+export const agenciesRelations = relations(agencies, ({ one, many }) => ({
   posts: many(posts),
-  user: one(users, { references: [users.id], fields: [sites.userId] }),
+  user: one(users, { references: [users.id], fields: [agencies.userId] }),
 }));
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
@@ -200,10 +200,10 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const userRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
   sessions: many(sessions),
-  sites: many(sites),
+  agencies: many(agencies),
   posts: many(posts),
 }));
 
-export type SelectSite = typeof sites.$inferSelect;
+export type SelectAgency = typeof agencies.$inferSelect;
 export type SelectPost = typeof posts.$inferSelect;
 export type SelectExample = typeof examples.$inferSelect;

@@ -4,7 +4,7 @@ import Posts from "@/components/posts";
 import CreatePostButton from "@/components/create-post-button";
 import db from "@/lib/db";
 
-export default async function SitePosts({
+export default async function AgencyPosts({
   params,
 }: {
   params: { id: string };
@@ -13,8 +13,8 @@ export default async function SitePosts({
   if (!session) {
     redirect("/login");
   }
-  const data = await db.query.sites.findFirst({
-    where: (sites, { eq }) => eq(sites.id, decodeURIComponent(params.id)),
+  const data = await db.query.agencies.findFirst({
+    where: (agencies, { eq }) => eq(agencies.id, decodeURIComponent(params.id)),
   });
 
   if (!data || data.userId !== session.user.id) {
@@ -45,7 +45,7 @@ export default async function SitePosts({
         </div>
         <CreatePostButton />
       </div>
-      <Posts siteId={decodeURIComponent(params.id)} />
+      <Posts agencyId={decodeURIComponent(params.id)} />
     </>
   );
 }
