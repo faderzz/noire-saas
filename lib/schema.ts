@@ -179,6 +179,26 @@ export const posts = pgTable(
   },
 );
 
+export const subusers = pgTable(
+  "subusers",
+  {
+    id: serial("id").primaryKey(),
+    agencyId: text("agencyId")
+      .notNull()
+      .references(() => agencies.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    role: text("role").notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).notNull().$onUpdate(() => new Date()),
+  },
+  (table) => {
+    return {
+      agencyIdIdx: index().on(table.agencyId),
+    };
+  },
+);
+
 export const postsRelations = relations(posts, ({ one }) => ({
   agency: one(agencies, { references: [agencies.id], fields: [posts.agencyId] }),
   user: one(users, { references: [users.id], fields: [posts.userId] }),
