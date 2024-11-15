@@ -1,141 +1,453 @@
-<a href="https://app.vercel.pub">
-  <img alt="Platforms Starter Kit" src="/public/thumbnail.png">
-  <h1 align="center">Platforms Starter Kit</h1>
-</a>
+# Noire SaaS Platform - Next.js Technical Specification
 
-<p align="center">
-  The <em>all-in-one</em> starter kit <br/>
-  for building multi-tenant applications.
-</p>
+## Technical Stack
 
-<p align="center">
-  <a href="#introduction"><strong>Introduction</strong></a> ·
-  <a href="https://app.vercel.pub/"><strong>Demo</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="https://vercel.com/guides/nextjs-multi-tenant-application"><strong>Guide</strong></a> ·
-  <a href="https://steven.vercel.pub/kitchen-sink"><strong>Kitchen Sink</strong></a> ·
-  <a href="#contributing"><strong>Contributing</strong></a>
-</p>
-<br/>
+### Frontend
+- **Framework**: Next.js 14+ with App Router
+- **Language**: TypeScript
+- **State Management**: 
+  - React Context for global UI state
+  - React Query for server state management
+- **Styling**: 
+  - Tailwind CSS
+  - shadcn/ui for component library
+  - CSS Modules for custom components
+- **Forms**: React Hook Form with Zod validation
+- **Charts/Visualizations**: 
+  - Recharts for analytics
+  - React DnD for Kanban boards
+  - Gantt charts using custom implementation
 
-## Introduction
+### Backend
+- **API**: Next.js API routes with Edge Runtime where applicable
+- **Database**: 
+  - PostgreSQL with Prisma ORM
+  - Redis for caching and real-time features
+- **Authentication**: 
+  - Next-Auth with multiple providers
+  - JWT for session management
+- **File Storage**: Amazon S3 or similar
+- **Email**: Resend for transactional emails
+- **Search**: Elasticsearch or Meilisearch
 
-The [Platforms Starter Kit](https://app.vercel.pub/) is a full-stack Next.js app with multi-tenancy and custom domain support. Built with [Next.js App Router](https://nextjs.org/docs/app), [Vercel Postgres](https://vercel.com/storage/postgres) and the [Vercel Domains API](https://vercel.com/docs/rest-api/endpoints#domains).
+### DevOps
+- **Hosting**: Vercel
+- **CI/CD**: GitHub Actions
+- **Domain Management**: Custom domains via Vercel
+- **Monitoring**: 
+  - Vercel Analytics
+  - Sentry for error tracking
+  - OpenTelemetry for performance monitoring
 
-Here's a quick 30-second demo:
+## Multi-tenancy Implementation
 
-https://github.com/vercel/platforms/assets/28986134/bd370257-0c27-4cf5-8a56-28589f36f0ef
+### Database Schema
+```prisma
+model Organization {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  customDomain  String?  @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  users         User[]
+  clients       Client[]
+  projects      Project[]
+  subscriptionTier SubscriptionTier @relation(fields: [tierId], references: [id])
+  tierId        String
+}
 
-## Features
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  role          Role     @default(USER)
+  organizationId String
+  organization  Organization @relation(fields: [organizationId], references: [id])
+}
+```
 
-1. **Multi-tenancy:** Programmatically assign unlimited custom domains, subdomains, and SSL certificates to your users using the [Vercel Domains API](https://vercel.com/docs/rest-api/endpoints#domains)
-2. **Performance**: Fast & beautiful blog posts cached via [Vercel's Edge Network](https://vercel.com/docs/concepts/edge-network/overview), with the ability to invalidate the cache on-demand (when users make changes) using [Incremental Static Regeneration](https://vercel.com/docs/concepts/next.js/incremental-static-regeneration) + Next.js' `revalidateTag` API
-3. **AI Editor**: AI-powered Markdown editor for a Notion-style writing experience powered by [Novel](https://novel.sh/)
-4. **Image Uploads**: Drag & drop / copy & paste image uploads, backed by [Vercel Blob](https://vercel.com/storage/blob)
-5. **Custom styles**: Custom fonts, 404 pages, favicons, sitemaps for each site via the [Next.js file-based Metadata API](https://nextjs.org/docs/app/api-reference/file-conventions/metadata)
-6. **Dynamic OG Cards**: Each blog post comes with a dynamic OG image powered by [@vercel/og](https://vercel.com/docs/concepts/functions/edge-functions/og-image-generation)
-7. **Dark Mode**: For a better user experience at night
-8. **Multi-tenant Preview URLs**: Preview changes to your client sites using [Vercel Preview URLs](https://vercel.com/docs/deployments/generated-urls). [Learn more](https://vercel.com/guides/nextjs-multi-tenant-application#3.-multi-tenant-preview-urls).
+### Domain Routing
+```typescript
+// middleware.ts
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://images.ctfassets.net/e5382hct74si/k7XpXIE0rDsHCAYvkKhff/ff44c07588068d8fefa334cd6a318c8a/CleanShot_2023-07-05_at_08.39.02.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://images.ctfassets.net/e5382hct74si/7tiAitb8kdgUGktycr540c/d33f2834f9356bce25e0721c4ebe4f9a/CleanShot_2023-07-05_at_08.39.10.png">
-    <img alt="Demo" src="https://images.ctfassets.net/e5382hct74si/7tiAitb8kdgUGktycr540c/d33f2834f9356bce25e0721c4ebe4f9a/CleanShot_2023-07-05_at_08.39.10.png">
-</picture>
+export async function middleware(request: NextRequest) {
+  const hostname = request.headers.get('host')
+  const { pathname } = request.nextUrl
+  
+  // Check custom domain or subdomain logic
+  const organization = await prisma.organization.findFirst({
+    where: {
+      OR: [
+        { customDomain: hostname },
+        { slug: hostname?.split('.')[0] }
+      ]
+    }
+  })
+  
+  // Routing logic based on organization
+}
+```
 
-## Deploy Your Own
+## Development Phases
 
-Deploy your own version of this starter kit with Vercel.
+### Phase 1: Foundation Setup
+1. **Project Initialization**
+   - Initialize Next.js 14 project with TypeScript
+   - Configure ESLint and Prettier
+   - Set up Git repository with conventional commits
+   - Implement Tailwind CSS and shadcn/ui
+   - Create base layout components
+   - Set up test environment with Jest and Testing Library
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-title=Platforms+Starter+Kit&demo-description=A+template+for+site+builders+and+low-code+tools.&demo-url=https%3A%2F%2Fdemo.vercel.pub%2F&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F40JwjdHlPr0Z575MPYbxUA%2Fd5903afc68cb34569a3886293414c37c%2FOG_Image.png&project-name=Platforms+Starter+Kit&repository-name=platforms-starter-kit&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fplatforms&from=templates&env=NEXT_PUBLIC_ROOT_DOMAIN%2CNEXTAUTH_SECRET%2CAUTH_GITHUB_ID%2CAUTH_GITHUB_SECRET%2CAUTH_BEARER_TOKEN%2CPROJECT_ID_VERCEL%2CTEAM_ID_VERCEL%2COPENAI_API_KEY&envDescription=These+environment+variables+are+required+to+run+this+application.&envLink=https%3A%2F%2Fgithub.com%2Fvercel%2Fplatforms%2Fblob%2Fmain%2F.env.example&stores=%5B%7B%22type%22%3A%22postgres%22%7D%5D)
+2. **Database & Authentication**
+   ```typescript
+   // prisma/schema.prisma
+   model User {
+     id            String   @id @default(cuid())
+     email         String   @unique
+     name          String?
+     organizations OrganizationMember[]
+     createdAt     DateTime @default(now())
+     updatedAt     DateTime @updatedAt
+   }
 
-You can also [read the guide](https://vercel.com/guides/nextjs-multi-tenant-application) to learn how to develop your own version of this template.
+   model Organization {
+     id            String   @id @default(cuid())
+     name          String
+     slug          String   @unique
+     members       OrganizationMember[]
+     customDomain  String?  @unique
+   }
 
-## What is a multi-tenant application?
+   model OrganizationMember {
+     id             String       @id @default(cuid())
+     organization   Organization @relation(fields: [organizationId], references: [id])
+     organizationId String
+     user           User         @relation(fields: [userId], references: [id])
+     userId         String
+     role           Role         @default(MEMBER)
+     
+     @@unique([organizationId, userId])
+   }
+   ```
+   - Set up Prisma ORM with initial schema
+   - Configure NextAuth with email and OAuth providers
+   - Implement session management
+   - Create basic user model and migration
+   - Set up database backup system
 
-Multi-tenant applications serve multiple customers across different subdomains/custom domains with a single unified codebase.
+3. **Multi-tenancy Infrastructure**
+   ```typescript
+   // middleware.ts
+   import { createMiddleware } from '@/lib/middleware'
+   
+   export const middleware = createMiddleware({
+     // Match all paths except public ones
+     matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+   
+     async handler(req) {
+       const hostname = req.headers.get('host')
+       const subdomain = getSubdomain(hostname)
+       
+       // Handle routing based on subdomain/custom domain
+       const organization = await getOrganization(subdomain)
+       if (!organization) {
+         return new Response('Organization not found', { status: 404 })
+       }
+       
+       // Add organization to request context
+       req.organization = organization
+     }
+   })
+   ```
+   - Implement domain/subdomain routing
+   - Create middleware for organization context
+   - Set up organization resolution
+   - Implement custom domain handling
 
-For example, our demo is a multi-tenant application:
+### Phase 2: Core Platform Features
+1. **User Management System**
+   - Build user invitation flow
+   - Implement role-based access control
+   - Create user settings pages
+   - Add organization member management
+   - Implement user preferences
 
-- Subdomain: [demo.vercel.pub](http://demo.vercel.pub)
-- Custom domain: [platformize.co](http://platformize.co) (maps to [demo.vercel.pub](http://demo.vercel.pub))
-- Build your own: [app.vercel.pub](http://app.vercel.pub)
+2. **Organization Settings**
+   ```typescript
+   // app/[organization]/settings/page.tsx
+   export default function OrganizationSettings() {
+     const { organization } = useOrganization()
+     const updateOrganization = useMutation({
+       mutationFn: async (data: OrganizationUpdateData) => {
+         return await updateOrganizationSettings(organization.id, data)
+       }
+     })
+     
+     return (
+       <SettingsForm 
+         defaultValues={organization}
+         onSubmit={updateOrganization.mutate}
+       />
+     )
+   }
+   ```
+   - Create organization profile management
+   - Build billing settings
+   - Implement team settings
+   - Add integration settings
+   - Create audit log viewer
 
-Another example is [Hashnode](https://vercel.com/customers/hashnode), a popular blogging platform. Each writer has their own unique `.hashnode.dev` subdomain for their blog:
+3. **Dashboard & Navigation**
+   - Build responsive dashboard layout
+   - Implement sidebar navigation
+   - Create overview statistics
+   - Add quick action buttons
+   - Implement breadcrumb navigation
 
-- [eda.hashnode.dev](https://eda.hashnode.dev/)
-- [katycodesstuff.hashnode.dev](https://katycodesstuff.hashnode.dev/)
-- [akoskm.hashnode.dev](https://akoskm.hashnode.dev/)
+### Phase 3: Financial Infrastructure
+1. **Stripe Integration**
+   - Set up Stripe Connect
+   - Implement subscription management
+   - Create webhook handlers
+   - Add payment processing
+   - Implement usage tracking
 
-Users can also map custom domains to their `.hashnode.dev` subdomain:
+2. **Invoice System**
+   ```typescript
+   // lib/invoices/generator.ts
+   export class InvoiceGenerator {
+     async generate(data: InvoiceData) {
+       // Create invoice in database
+       const invoice = await prisma.invoice.create({
+         data: {
+           organizationId: data.organizationId,
+           amount: data.amount,
+           items: data.items,
+           dueDate: data.dueDate
+         }
+       })
+       
+       // Generate PDF
+       const pdf = await generateInvoicePDF(invoice)
+       
+       // Store in S3
+       await uploadToS3(pdf, `invoices/${invoice.id}.pdf`)
+       
+       return invoice
+     }
+   }
+   ```
+   - Create invoice generation system
+   - Implement invoice templates
+   - Build invoice management interface
+   - Add payment tracking
+   - Create payment reminders
 
-- [akoskm.com](https://akoskm.com/) → [akoskm.hashnode.dev](https://akoskm.hashnode.dev/)
+3. **Budget Tracking**
+   - Implement expense categories
+   - Create budget allocation system
+   - Build financial reports
+   - Add spending alerts
+   - Create financial dashboard
 
-With the Platforms Starter Kit, you can offer unlimited custom domains at no extra cost to your customers as a premium feature, without having to worry about custom nameservers or configuring SSL certificates.
+### Phase 4: Project Infrastructure
+1. **Project Management**
+   - Create project CRUD operations
+   - Implement project settings
+   - Build project dashboard
+   - Add project member management
+   - Create project templates
 
-## Examples of platforms
+2. **Task Management**
+   ```typescript
+   // components/KanbanBoard/Column.tsx
+   export function KanbanColumn({ 
+     columnId, 
+     tasks 
+   }: KanbanColumnProps) {
+     return (
+       <Droppable droppableId={columnId}>
+         {(provided) => (
+           <div
+             ref={provided.innerRef}
+             {...provided.droppableProps}
+             className="kanban-column"
+           >
+             {tasks.map((task, index) => (
+               <DraggableTask 
+                 key={task.id} 
+                 task={task} 
+                 index={index} 
+               />
+             ))}
+             {provided.placeholder}
+           </div>
+         )}
+       </Droppable>
+     )
+   }
+   ```
+   - Build Kanban board
+   - Implement task assignments
+   - Create task templates
+   - Add time tracking
+   - Implement task dependencies
 
-Vercel customers like [Hashnode](https://vercel.com/customers/hashnode), [Super](https://super.so), and [Cal.com](https://cal.com) are building scalable platforms on top of Vercel and Next.js. There are multiple types of platforms you can build with this starter kit:
+3. **Calendar & Scheduling**
+   - Build calendar views
+   - Implement event scheduling
+   - Create recurring events
+   - Add deadline tracking
+   - Implement calendar sharing
 
-### 1. Content creation platforms
+### Phase 5: Client Portal
+1. **Client Management**
+   - Create client profiles
+   - Build client onboarding flow
+   - Implement client access controls
+   - Add client communication system
+   - Create client dashboard
 
-These are content-heavy platforms (blogs) with simple, standardized page layouts and route structure.
+2. **Document Management**
+   ```typescript
+   // lib/documents/signing.ts
+   export class DocumentSigning {
+     async createSigningRequest(document: Document) {
+       const signingUrl = await generateSigningUrl(document)
+       
+       await prisma.signingRequest.create({
+         data: {
+           documentId: document.id,
+           status: 'PENDING',
+           expiresAt: addDays(new Date(), 7),
+           url: signingUrl
+         }
+       })
+       
+       return signingUrl
+     }
+   }
+   ```
+   - Implement document storage
+   - Build document signing
+   - Create document templates
+   - Add version control
+   - Implement document sharing
 
-> “With Vercel, we spend less time managing our infrastructure and more time delivering value to our users.” — Sandeep Panda, Co-founder, Hashnode
+3. **Support System**
+   - Build ticket system
+   - Create support dashboard
+   - Implement knowledge base
+   - Add ticket assignments
+   - Create SLA monitoring
 
-1. [Hashnode](https://hashnode.com)
-2. [Mintlify](https://mintlify.com/)
-3. [Read.cv](https://read.cv/)
+### Phase 6: Lead Management
+1. **Lead System**
+   - Create lead database
+   - Implement lead scoring
+   - Build lead nurturing
+   - Add lead assignment
+   - Create lead reporting
 
-### 2. Website & e-commerce store builders
+2. **Automation Engine**
+   ```typescript
+   // lib/automation/engine.ts
+   export class AutomationEngine {
+     private async executeStep(step: WorkflowStep, context: WorkflowContext) {
+       switch (step.type) {
+         case 'trigger':
+           return this.handleTrigger(step, context)
+         case 'condition':
+           return this.evaluateCondition(step, context)
+         case 'action':
+           return this.executeAction(step, context)
+         default:
+           throw new Error(`Unknown step type: ${step.type}`)
+       }
+     }
+   }
+   ```
+   - Build workflow engine
+   - Implement action system
+   - Create trigger handlers
+   - Add condition evaluator
+   - Implement workflow testing
 
-No-code site builders with customizable pages.
+3. **Integration Framework**
+   - Create webhook system
+   - Implement OAuth connections
+   - Build API integration
+   - Add event system
+   - Create integration marketplace
 
-By using Next.js and Vercel, [Super](https://super.so/) has fast, globally distributed websites with a no-code editor (Notion). Their customers get all the benefits of Next.js (like [Image Optimization](https://nextjs.org/docs/basic-features/image-optimization)) without touching any code.
+### Phase 7: Analytics & Reporting
+1. **Analytics System**
+   - Implement event tracking
+   - Create metrics collection
+   - Build dashboard widgets
+   - Add custom reports
+   - Implement data export
 
-1. [Super.so](https://super.so)
-2. [Typedream](https://typedream.com)
-3. [Makeswift](https://www.makeswift.com/)
+2. **Monitoring & Optimization**
+   ```typescript
+   // lib/monitoring/performance.ts
+   export class PerformanceMonitor {
+     async trackMetrics(metric: PerformanceMetric) {
+       await prisma.performanceLog.create({
+         data: {
+           metricName: metric.name,
+           value: metric.value,
+           timestamp: new Date(),
+           metadata: metric.metadata
+         }
+       })
+       
+       // Check thresholds
+       await this.checkAlertThresholds(metric)
+     }
+   }
+   ```
+   - Set up error tracking
+   - Implement performance monitoring
+   - Create health checks
+   - Add usage analytics
+   - Build admin dashboards
 
-### 3. B2B2C platforms
+## Deployment Strategy
 
-Multi-tenant authentication, login, and access controls.
+### Development Environment
+- Local PostgreSQL database
+- Local Redis instance
+- Mocked S3 storage
+- Stripe test mode
 
-With Vercel and Next.js, platforms like [Instatus](https://instatus.com) are able to create status pages that are _10x faster_ than competitors.
+### Staging Environment
+- Vercel Preview Deployments
+- Staging database cluster
+- Separate Redis instance
+- Test S3 bucket
 
-1. [Instatus](https://instatus.com/)
-2. [Cal.com](https://cal.com/)
-3. [Dub](https://dub.co/)
+### Production Environment
+- Vercel Production Deployment
+- Production database cluster with replicas
+- Distributed Redis cluster
+- Production S3 bucket with CDN
 
-## Built on open source
+## Performance Optimization
+- Implement static page generation where possible
+- Use React Suspense for code splitting
+- Implement efficient caching strategies
+- Optimize database queries
+- Use Edge functions for global performance
 
-This working demo site was built using the Platforms Starter Kit and:
-
-- [Next.js](https://nextjs.org/) as the React framework
-- [Tailwind](https://tailwindcss.com/) for CSS styling
-- [Drizzle](https://orm.drizzle.team/) as the ORM for database access
-- [Novel](https://novel.sh/) for the WYSIWYG editor
-- [Vercel Postgres](https://vercel.com/storage/postgres) for the database
-- [Vercel Blob](https://vercel.com/storage/blob) for image uploads
-- [NextAuth.js](https://next-auth.js.org/) for authentication
-- [Tremor](https://tremor.so/) for charts
-- [Vercel](http://vercel.com/) for deployment
-
-## Contributing
-
-- [Start a discussion](https://github.com/vercel/platforms/discussions) with a question, piece of feedback, or idea you want to share with the team.
-- [Open an issue](https://github.com/vercel/platforms/issues) if you believe you've encountered a bug with the starter kit.
-
-## Author
-
-- Steven Tey ([@steventey](https://twitter.com/steventey))
-
-## License
-
-The MIT License.
-
----
-
-<a aria-label="Vercel logo" href="https://vercel.com">
-  <img src="https://badgen.net/badge/icon/Made%20by%20Vercel?icon=zeit&label&color=black&labelColor=black">
-</a>
+## Security Measures
+- Implement RBAC (Role-Based Access Control)
+- Set up CSP (Content Security Policy)
+- Configure rate limiting
+- Implement audit logging
+- Regular security scanning
