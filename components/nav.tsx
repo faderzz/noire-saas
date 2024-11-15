@@ -15,6 +15,7 @@ import {
   FileCode,
   Github,
   Calendar,
+  Briefcase,
 } from "lucide-react";
 import {
   useParams,
@@ -54,6 +55,24 @@ export default function Nav({ children }: { children: ReactNode }) {
           name: "Back to All Agencies",
           href: "/agencies",
           icon: <ArrowLeft width={18} />,
+        },
+        {
+          name: "Projects",
+          href: `/agency/${id}/projects`,
+          isActive: segments.includes("projects"),
+          icon: <Briefcase width={18} />,
+        },
+        {
+          name: "Team",
+          href: `/agency/${id}/team`,
+          isActive: segments.includes("team"),
+          icon: <Github width={18} />,
+        },
+        {
+          name: "Clients",
+          href: `/agency/${id}/clients`,
+          isActive: segments.includes("clients"),
+          icon: <Megaphone width={18} />,
         },
         {
           name: "Posts",
