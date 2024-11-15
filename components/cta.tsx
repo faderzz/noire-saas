@@ -33,7 +33,7 @@ export default function CTA() {
       </button>
       <div className="text-center lg:text-left">
         <p className="font-title text-lg text-black sm:text-2xl dark:text-white">
-          Platforms Starter Kit Demo
+          Noire Demo
         </p>
         <p
           className={`${
@@ -60,7 +60,7 @@ export default function CTA() {
       >
         <a
           className="whitespace-no-wrap flex-auto rounded-md border border-stone-200 px-5 py-1 font-title text-lg text-black transition-all duration-150 ease-in-out hover:border-black sm:py-3 dark:border-stone-700 dark:text-white dark:hover:border-white"
-          href="https://app.vercel.pub"
+          href="https://app.noire.agency"
           rel="noreferrer"
           target="_blank"
         >

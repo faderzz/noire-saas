@@ -67,9 +67,9 @@ export const updateAgency = withAgencyAuth(
       let response;
 
       if (key === "customDomain") {
-        if (value.includes("vercel.pub")) {
+        if (value.includes("noire.agency")) {
           return {
-            error: "Cannot use vercel.pub subdomain as your custom domain",
+            error: "Cannot use noire.agency subdomain as your custom domain",
           };
 
           // if the custom domain is valid, we need to add it to Vercel
