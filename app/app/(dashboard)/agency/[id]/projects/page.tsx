@@ -2,6 +2,7 @@ import { getSession } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import db from "@/lib/db";
 import Projects from "@/components/projects";
+import CreateProjectButton from "@/components/create-project-button";
 
 export default async function AgencyProjects({
   params,
@@ -43,6 +44,7 @@ export default async function AgencyProjects({
           </a>
         </div>
         {/* <CreatePostButton /> */}
+        <CreateProjectButton />
       </div>
       <Projects agencyId={decodeURIComponent(params.id)} />
     </>

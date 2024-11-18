@@ -246,6 +246,49 @@ export const createPost = withAgencyAuth(
   },
 );
 
+export const createProject = withAgencyAuth(
+  async (formData: FormData, agency: SelectAgency) => {
+    const session = await getSession();
+    if (!session?.user.id) {
+      return {
+        error: "Not authenticated",
+      };
+    }
+
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const status = formData.get("status") as string;
+    const priority = formData.get("priority") as string;
+    const startDate = formData.get("startDate") as string;
+    const endDate = formData.get("endDate") as string;
+    const budget = formData.get("budget") as string;
+    const customFields = formData.get("customFields") as string;
+
+    const [response] = await db
+      .insert(projects)
+      .values({
+        agencyId: agency.id,
+        userId: session.user.id,
+        name,
+        description,
+        status: status as any,
+        priority: priority as any,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        budget: budget ? parseFloat(budget) : null,
+        customFields: customFields ? JSON.parse(customFields) : null,
+      })
+      .returning();
+
+    revalidateTag(
+      `${agency.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-projects`,
+    );
+    agency.customDomain && revalidateTag(`${agency.customDomain}-projects`);
+
+    return response;
+  },
+);
+
 // creating a separate function for this because we're not using FormData
 export const updatePost = async (data: SelectPost) => {
   const session = await getSession();
