@@ -24,7 +24,7 @@ export default function CreateProjectButton() {
           Create New Project
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[825px] bg-white dark:text-white dark:bg-black">
+      <DialogContent className="sm:max-w-[425px] bg-white dark:text-white dark:bg-black">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>

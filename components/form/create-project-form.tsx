@@ -89,9 +89,9 @@ export default function CreateProjectForm({ onSuccess }) {
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-black">
-            <SelectItem value="NOT_STARTED" className="text-tremor-content-strong dark:text-white">Not Started</SelectItem>
-            <SelectItem value="IN_PROGRESS" className="text-tremor-content-strong dark:text-white">In Progress</SelectItem>
-            <SelectItem value="COMPLETED" className="text-tremor-content-strong dark:text-white">Completed</SelectItem>
+            <SelectItem value="NOT_STARTED" className="text-tremor-content-strong dark:text-white dark:hover:bg-white/10 transition-colors ease-in-out">Not Started</SelectItem>
+            <SelectItem value="IN_PROGRESS" className="text-tremor-content-strong dark:text-white dark:hover:bg-white/10 transition-colors ease-in-out">In Progress</SelectItem>
+            <SelectItem value="COMPLETED" className="text-tremor-content-strong dark:text-white dark:hover:bg-white/10 transition-colors ease-in-out">Completed</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -104,9 +104,9 @@ export default function CreateProjectForm({ onSuccess }) {
               <SelectValue placeholder="Select priority" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-black">
-              <SelectItem value="LOW" className="text-tremor-content-strong dark:text-white">Low</SelectItem>
-              <SelectItem value="MEDIUM" className="text-tremor-content-strong dark:text-white">Medium</SelectItem>
-              <SelectItem value="HIGH" className="text-tremor-content-strong dark:text-white">High</SelectItem>
+              <SelectItem value="LOW" className="text-tremor-content-strong dark:text-white dark:hover:bg-white/10 transition-colors ease-in-out">Low</SelectItem>
+              <SelectItem value="MEDIUM" className="text-tremor-content-strong dark:text-white dark:hover:bg-white/10 transition-colors ease-in-out">Medium</SelectItem>
+              <SelectItem value="HIGH" className="text-tremor-content-strong dark:text-white dark:hover:bg-white/10 transition-colors ease-in-out">High</SelectItem>
             </SelectContent>
           </Select>
         </div>
