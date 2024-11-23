@@ -1,20 +1,25 @@
-import { getSession } from "@/lib/auth";
+import { authOptions } from "@/lib/auth";
+import { getServerSession } from "next-auth/next"
 
-export const runtime = "edge";
 
 export async function POST(req: Request) {
-    const session = await getSession();
-
-    console.log(req)
-    console.log("Session:", session)
-
-    if (!session) {
+    const session = await getServerSession()
+    if (session) {
+        // Signed in
+        // console.log("Session", JSON.stringify(session, null, 2))
+    } else {
+        // Not Signed in
         return new Response(
             "Unauthorised",
             {
                 status: 401,
             }
-          );
+        )
     }
+
+    // Wait for the form data
+    const formData = await req.json();
+    console.log(formData)
+
 
 }

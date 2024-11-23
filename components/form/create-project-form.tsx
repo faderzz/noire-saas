@@ -22,11 +22,16 @@ export default function CreateProjectForm({ onSuccess }) {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+    formData.append('agencyID', id);
+    const formDataObj = Object.fromEntries(formData.entries());
 
     try {
       const response = await fetch('/api/projects', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formDataObj),
       });
 
       if (!response.ok) {
