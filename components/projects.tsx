@@ -16,21 +16,15 @@ export default async function Projects({
     redirect("/login");
   }
 
-  // const projects = await db.query.projects.findMany({
-  //   where: (projects, { and, eq }) =>
-  //     and(
-  //       eq(projects.userId, session.user.id),
-  //       agencyId ? eq(projects.agencyId, agencyId) : undefined,
-  //     ),
-  //   with: {
-  //     agency: true,
-  //   },
-  //   orderBy: (projects, { desc }) => desc(projects.updatedAt),
-  //   ...(limit ? { limit } : {}),
-  // });
+  // Find projects where agencyId matches
+  const projects = await db.query.projects.findMany({
+    where: (projects, { eq }) => agencyId ? eq(projects.agencyId, agencyId) : undefined,
+    orderBy: (projects) => projects.createdAt,
+    take: limit || 20,
+  });
 
   // example projects
-  const projects = [];
+  // const projects = [];
 
   return projects.length > 0 ? (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
