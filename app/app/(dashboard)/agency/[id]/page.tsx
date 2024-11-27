@@ -1,10 +1,10 @@
 import { getSession } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
-import Posts from "@/components/posts";
-import CreatePostButton from "@/components/create-post-button";
 import db from "@/lib/db";
+import Projects from "@/components/projects";
+import CreateProjectButton from "@/components/create-project-button";
 
-export default async function AgencyPosts({
+export default async function AgencyProjects({
   params,
 }: {
   params: { id: string };
@@ -28,7 +28,7 @@ export default async function AgencyPosts({
       <div className="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
         <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0">
           <h1 className="w-60 truncate font-cal text-xl font-bold sm:w-auto sm:text-3xl dark:text-white">
-            All Posts for {data.name}
+            All Projects for {data.name}
           </h1>
           <a
             href={
@@ -43,9 +43,10 @@ export default async function AgencyPosts({
             {url} ↗
           </a>
         </div>
-        <CreatePostButton />
+        {/* <CreatePostButton /> */}
+        <CreateProjectButton />
       </div>
-      <Posts agencyId={decodeURIComponent(params.id)} />
+      <Projects agencyId={decodeURIComponent(params.id)} />
     </>
   );
 }

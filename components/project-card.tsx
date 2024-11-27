@@ -1,61 +1,48 @@
 import BlurImage from "@/components/blur-image";
-import type { SelectPost, SelectAgency } from "@/lib/schema";
-import { placeholderBlurhash, random } from "@/lib/utils";
-import { BarChart, ExternalLink } from "lucide-react";
+import type { SelectProject, SelectAgency } from "@/lib/schema";
 import Link from "next/link";
+import { Badge } from "./ui/badge";
 
 export default function ProjectCard({
   data,
 }: {
-  data: SelectPost & { agency: SelectAgency | null };
+  data: SelectProject & { agency: SelectAgency | null };
 }) {
   const url = `${data.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}/${data.slug}`;
+  const [statusColor, statusText] = statusCheck(data.status) ?? ["bg-gray-500", "Unknown"];
 
   return (
-    <div className="relative rounded-lg border border-stone-200 pb-10 shadow-md transition-all hover:shadow-xl dark:border-stone-700 dark:hover:border-white">
+    <div className="relative rounded-lg border border-stone-200 shadow-md transition-all hover:shadow-xl dark:border-stone-700 dark:hover:border-white">
       <Link
-        href={`/post/${data.id}`}
+        href={`/project/${data.id}`}
         className="flex flex-col overflow-hidden rounded-lg"
       >
-        <div className="relative h-44 overflow-hidden">
-          <BlurImage
-            alt={data.title ?? "Card thumbnail"}
-            width={500}
-            height={400}
-            className="h-full object-cover"
-            src={data.image ?? "/placeholder.png"}
-            placeholder="blur"
-            blurDataURL={data.imageBlurhash ?? placeholderBlurhash}
-          />
-          {!data.published && (
-            <span className="absolute bottom-2 right-2 rounded-md border border-stone-200 bg-white px-3 py-0.5 text-sm font-medium text-stone-600 shadow-md">
-              Draft
-            </span>
-          )}
-        </div>
         <div className="border-t border-stone-200 p-4 dark:border-stone-700">
           <h3 className="my-0 truncate font-cal text-xl font-bold tracking-wide dark:text-white dark:text-white">
-            {data.title}
+            {data.name}
+            
           </h3>
-          <p className="mt-2 line-clamp-1 text-sm font-normal leading-snug text-stone-500 dark:text-stone-400">
+          <p className="my-2 line-clamp-1 text-sm font-normal leading-snug text-stone-500 dark:text-stone-400">
             {data.description}
           </p>
+          <div className="justify-end">
+            <Badge className="dark:text-white" variant="primary">{statusText}</Badge>
+          </div>
         </div>
+        
       </Link>
-      <div className="absolute bottom-4 flex w-full px-4">
-        <a
-          href={
-            process.env.NEXT_PUBLIC_VERCEL_ENV
-              ? `https://${url}`
-              : `http://${data.agency?.subdomain}.localhost:3000/${data.slug}`
-          }
-          target="_blank"
-          rel="noreferrer"
-          className="truncate rounded-md bg-stone-100 px-2 py-1 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700"
-        >
-          {url} ↗
-        </a>
-      </div>
     </div>
   );
+}
+
+function statusCheck(status: string) {
+  if (status === "NOT_STARTED") {
+    return ["bg-red-500", "Not Started"];
+  }
+  if (status === "IN_PROGRESS") {
+    return ["bg-yellow-500", "In Progress"];
+  }
+  if (status === "COMPLETED") {
+    return ["bg-green-500", "Completed"];
+  }
 }

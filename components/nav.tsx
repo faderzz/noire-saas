@@ -58,8 +58,8 @@ export default function Nav({ children }: { children: ReactNode }) {
         },
         {
           name: "Projects",
-          href: `/agency/${id}/projects`,
-          isActive: segments.includes("projects"),
+          href: `/agency/${id}`,
+          isActive: segments.length === 2,
           icon: <Briefcase width={18} />,
         },
         {
@@ -76,8 +76,8 @@ export default function Nav({ children }: { children: ReactNode }) {
         },
         {
           name: "Posts",
-          href: `/agency/${id}`,
-          isActive: segments.length === 2,
+          href: `/agency/${id}/posts`,
+          isActive: segments.includes("posts"),
           icon: <Newspaper width={18} />,
         },
         {
