@@ -84,6 +84,8 @@ export default async function AgencyProjectPage({
   const slug = decodeURIComponent(params.slug);
   const data = await getProjectData(domain, slug);
 
+  console.log("project page:", data);
+
   if (!data) {
     notFound();
   }

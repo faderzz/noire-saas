@@ -173,7 +173,7 @@ export async function getProjectData(domain: string, slug: string) {
           user: users,
         })
         .from(projects)
-        .leftJoin(agencies, eq(agencies.id, posts.agencyId))
+        .leftJoin(agencies, eq(agencies.id, projects.agencyId))
         .leftJoin(users, eq(users.id, agencies.userId))
         .where(
           and(
