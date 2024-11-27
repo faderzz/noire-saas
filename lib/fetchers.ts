@@ -210,3 +210,5 @@ export async function getProjectData(domain: string, slug: string) {
     },
   )();
 }
+
+// im ai terry davis lol
