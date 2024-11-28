@@ -220,6 +220,34 @@ export const getAgencyFromPostId = async (postId: string) => {
   return post?.agencyId;
 };
 
+export const getAgencyFromProjectId = async (projectId: string) => {
+  const project = await db.query.projects.findFirst({
+    where: eq(posts.id, projectId),
+    columns: {
+      agencyId: true,
+    },
+  })
+}
+
+export const getOwnerFromProjectId = async (projectId: string) => {
+  const project = await db.query.projects.findFirst({
+    where: eq(posts.id, projectId),
+    columns: {
+      agencyId: true,
+    },
+  })
+  // get agency record and fetch userId
+  const agency = await db.query.agencies.findFirst({
+    where: eq(agencies.id, project?.agencyId),
+    columns: {
+      userId: true,
+    },
+  })
+
+  // return the userId
+  return agency?.userId
+}
+
 export const createPost = withAgencyAuth(
   async (_: FormData, agency: SelectAgency) => {
     const session = await getSession();
