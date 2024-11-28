@@ -17,9 +17,16 @@ export default async function ProjectSettings({
   const data = await db.query.projects.findFirst({
     where: (projects, { eq }) => eq(projects.id, decodeURIComponent(params.id)),
   });
-  if (!data || data.userId !== session.user.id) {
+
+  // Find userId for agency
+  const agency = await db.query.agencies.findFirst({
+    where: (agencies, { eq }) => eq(agencies.id, data?.agencyId),
+  })
+
+  if (agency?.userId !== session.user.id) {
     notFound();
   }
+
   return (
     <div className="flex max-w-screen-xl flex-col space-y-12 p-6">
       <div className="flex flex-col space-y-6">
@@ -27,14 +34,14 @@ export default async function ProjectSettings({
           Project Settings
         </h1>
         <Form
-          title="Project Slug"
-          description="The slug is the URL-friendly version of the name. It is usually all lowercase and contains only letters, numbers, and hyphens."
-          helpText="Please use a slug that is unique to this project."
+          title="Project Name"
+          description="The project name is what your client will see and your team. It should be unique to this project."
+          helpText="Please use a name that is unique to this project."
           inputAttrs={{
-            name: "slug",
+            name: "name",
             type: "text",
-            defaultValue: data?.slug!,
-            placeholder: "slug",
+            defaultValue: data?.name!,
+            placeholder: "name",
           }}
           handleSubmit={updateProjectMetadata}
         />
@@ -51,7 +58,7 @@ export default async function ProjectSettings({
           handleSubmit={updateProjectMetadata}
         />
 
-        <DeleteProjectForm projectName={data?.title!} />
+        {/* <DeleteProjectForm projectName={data?.name!} /> */}
       </div>
     </div>
   );
