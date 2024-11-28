@@ -227,6 +227,8 @@ export const getAgencyFromProjectId = async (projectId: string) => {
       agencyId: true,
     },
   })
+
+  return project?.agencyId;
 }
 
 export const getOwnerFromProjectId = async (projectId: string) => {
