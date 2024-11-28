@@ -16,6 +16,7 @@ import {
   Github,
   Calendar,
   Briefcase,
+  LayoutDashboardIcon,
 } from "lucide-react";
 import {
   useParams,
@@ -23,7 +24,7 @@ import {
   useSelectedLayoutSegments,
 } from "next/navigation";
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import { getAgencyFromPostId } from "@/lib/actions";
+import { getAgencyFromPostId, getAgencyFromProjectId } from "@/lib/actions";
 import Image from "next/image";
 
 const externalLinks = [
@@ -40,13 +41,22 @@ export default function Nav({ children }: { children: ReactNode }) {
 
   const [agencyId, setAgencyId] = useState<string | null>();
 
-  useEffect(() => {
-    if (segments[0] === "post" && id) {
-      getAgencyFromPostId(id).then((id) => {
-        setAgencyId(id);
-      });
-    }
-  }, [segments, id]);
+  // useEffect(() => {
+  //   if (segments[0] === "post" && id) {
+  //     getAgencyFromPostId(id).then((id) => {
+  //       setAgencyId(id);
+  //     });
+  //   }
+  // }, [segments, id]);
+
+  // useEffect(() => {
+  //   if (segments[0] === "project" && id) {
+  //     getAgencyFromProjectId(id).then((id) => {
+  //       setAgencyId(id);
+  //     });
+  //   }
+  // }, [segments, id]);
+
 
   const tabs = useMemo(() => {
     if (segments[0] === "agency" && id) {
@@ -109,6 +119,26 @@ export default function Nav({ children }: { children: ReactNode }) {
         {
           name: "Settings",
           href: `/post/${id}/settings`,
+          isActive: segments.includes("settings"),
+          icon: <Settings width={18} />,
+        },
+      ];
+    } else if (segments[0] === "project" && id) {
+      return [
+        {
+          name: "Back to All Projects",
+          href: agencyId ? `/agency/${agencyId}` : "/agencies",
+          icon: <ArrowLeft width={18} />,
+        },
+        {
+          name: "Dashboard",
+          href: `/project/${id}`,
+          isActive: segments.length === 2,
+          icon: <LayoutDashboardIcon width={18} />,
+        },
+        {
+          name: "Settings",
+          href: `/project/${id}/settings`,
           isActive: segments.includes("settings"),
           icon: <Settings width={18} />,
         },
