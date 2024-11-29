@@ -58,7 +58,7 @@ export default async function ProjectSettings({
           handleSubmit={updateProjectMetadata}
         />
 
-        {/* <DeleteProjectForm projectName={data?.name!} /> */}
+        <DeleteProjectForm projectName={data?.name!} />
       </div>
     </div>
   );

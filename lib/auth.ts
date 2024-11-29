@@ -4,6 +4,7 @@ import db from "./db";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { Adapter } from "next-auth/adapters";
 import { accounts, sessions, users, verificationTokens } from "./schema";
+import { getOwnerFromProjectId } from "./actions";
 
 const VERCEL_DEPLOYMENT = !!process.env.VERCEL_URL;
 export const authOptions: NextAuthOptions = {
@@ -135,5 +136,37 @@ export function withPostAuth(action: any) {
     }
 
     return action(formData, post, key);
+  };
+}
+
+export function withProjectAuth(action: any) {
+  return async (
+    formData: FormData | null,
+    projectId: string,
+    key: string | null,
+  ) => {
+    const session = await getSession();
+    if (!session?.user.id) {
+      return {
+        error: "Not authenticated",
+      };
+    }
+
+    const project = await db.query.projects.findFirst({
+      where: (projects, { eq }) => eq(projects.id, projectId),
+      with: {
+        agency: true,
+      },
+    });
+
+    const agencyOwner = await getOwnerFromProjectId(projectId);
+
+    if (!project || agencyOwner !== session.user.id) {
+      return {
+        error: "Project not found",
+      };
+    }
+
+    return action(formData, project, key);
   };
 }

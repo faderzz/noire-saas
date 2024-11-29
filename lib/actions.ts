@@ -1,6 +1,6 @@
 "use server";
 
-import { getSession } from "@/lib/auth";
+import { getSession, withProjectAuth } from "@/lib/auth";
 import {
   addDomainToVercel,
   removeDomainFromVercelProject,
@@ -13,7 +13,7 @@ import { customAlphabet } from "nanoid";
 import { revalidateTag } from "next/cache";
 import { withPostAuth, withAgencyAuth } from "./auth";
 import db from "./db";
-import { SelectPost, SelectAgency, posts, agencies, users } from "./schema";
+import { SelectPost, SelectAgency, posts, agencies, users, projects, SelectProject } from "./schema";
 
 const nanoid = customAlphabet(
   "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
@@ -440,6 +440,74 @@ export const updatePostMetadata = withPostAuth(
   },
 );
 
+export const updateProjectMetadata = withProjectAuth(
+  async (
+    formData: FormData,
+    project: SelectProject & {
+      agency: SelectAgency;
+    },
+    key: string,
+  ) => {
+    const value = formData.get(key) as string;
+
+    try {
+      let response;
+      if (key === "image") {
+        const file = formData.get("image") as File;
+        const filename = `${nanoid()}.${file.type.split("/")[1]}`;
+
+        const { url } = await put(filename, file, {
+          access: "public",
+        });
+
+        const blurhash = await getBlurDataURL(url);
+        response = await db
+          .update(projects)
+          .set({
+            image: url,
+            imageBlurhash: blurhash,
+          })
+          .where(eq(projects.id, project  .id))
+          .returning()
+          .then((res) => res[0]);
+      } else {
+        response = await db
+          .update(posts)
+          .set({
+            [key]: key === "published" ? value === "true" : value,
+          })
+          .where(eq(posts.id, post.id))
+          .returning()
+          .then((res) => res[0]);
+      }
+
+      revalidateTag(
+        `${post.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-posts`,
+      );
+      revalidateTag(
+        `${post.agency?.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}-${post.slug}`,
+      );
+
+      // if the agency has a custom domain, we need to revalidate those tags too
+      post.agency?.customDomain &&
+        (revalidateTag(`${post.agency?.customDomain}-posts`),
+        revalidateTag(`${post.agency?.customDomain}-${post.slug}`));
+
+      return response;
+    } catch (error: any) {
+      if (error.code === "P2002") {
+        return {
+          error: `This slug is already in use`,
+        };
+      } else {
+        return {
+          error: error.message,
+        };
+      }
+    }
+  },
+);
+
 export const deletePost = withPostAuth(
   async (_: FormData, post: SelectPost) => {
     try {
@@ -458,6 +526,26 @@ export const deletePost = withPostAuth(
     }
   },
 );
+
+export const deleteProject = withProjectAuth(
+  async (_: FormData, project: SelectPost) => {
+    try {
+      const [response] = await db
+        .delete(projects)
+        .where(eq(projects.id, project.id))
+        .returning({
+          agencyId: projects.agencyId,
+        });
+
+      return response;
+    } catch (error: any) {
+      return {
+        error: error.message,
+      };
+    }
+  },
+);
+
 
 export const editUser = async (
   formData: FormData,

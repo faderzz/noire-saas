@@ -71,4 +71,14 @@ export async function POST(req: Request) {
         endDate: isNaN(Date.parse(formData.endDate)) ? null : new Date(formData.endDate).toISOString(),
       })
       .returning();
+    
+    return new Response(
+        JSON.stringify(response),
+        {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+            },
+        }
+    )
 }

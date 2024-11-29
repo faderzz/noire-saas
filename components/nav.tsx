@@ -17,6 +17,8 @@ import {
   Calendar,
   Briefcase,
   LayoutDashboardIcon,
+  Users,
+  BookUser,
 } from "lucide-react";
 import {
   useParams,
@@ -76,13 +78,13 @@ export default function Nav({ children }: { children: ReactNode }) {
           name: "Team",
           href: `/agency/${id}/team`,
           isActive: segments.includes("team"),
-          icon: <Github width={18} />,
+          icon: <Users width={18} />,
         },
         {
           name: "Clients",
           href: `/agency/${id}/clients`,
           isActive: segments.includes("clients"),
-          icon: <Megaphone width={18} />,
+          icon: <BookUser width={18} />,
         },
         {
           name: "Posts",
