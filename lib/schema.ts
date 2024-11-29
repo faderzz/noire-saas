@@ -226,6 +226,7 @@ export const clients = pgTable(
       .references(() => agencies.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     email: text("email").notNull(),
+    password: text("password").notNull(), // Hashed password
     phone: text("phone"),
     company: text("company"),
     status: clientStatusEnum("status").default('ACTIVE'),
