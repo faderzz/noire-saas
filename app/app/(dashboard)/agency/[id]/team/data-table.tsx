@@ -59,40 +59,40 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
+          <Search className="h-4 w-4 text-muted-foreground dark:text-stone-400" />
           <Input
             placeholder="Filter by email..."
             value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
               table.getColumn("email")?.setFilterValue(event.target.value)
             }
-            className="max-w-sm"
+            className="max-w-sm dark:bg-stone-800 dark:border-stone-700"
           />
         </div>
         
         <Dialog open={isAddingUser} onOpenChange={setIsAddingUser}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="dark:bg-stone-800 dark:text-white dark:hover:bg-stone-700">
               <Plus className="mr-2 h-4 w-4" />
               Add User
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="dark:bg-stone-900">
             <DialogHeader>
-              <DialogTitle>Add Team Member</DialogTitle>
+              <DialogTitle className="dark:text-white">Add Team Member</DialogTitle>
             </DialogHeader>
             <AddUserForm onSuccess={() => setIsAddingUser(false)} />
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border dark:border-stone-700">
         <Table>
-          <TableHeader>
+          <TableHeader className="dark:bg-stone-800/50">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="dark:border-stone-700">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="dark:text-stone-300">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -110,9 +110,10 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="dark:border-stone-700 dark:hover:bg-stone-800/50"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="dark:text-stone-300">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
@@ -120,7 +121,7 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell colSpan={columns.length} className="h-24 text-center dark:text-stone-400">
                   No team members found.
                 </TableCell>
               </TableRow>
@@ -130,7 +131,7 @@ export function DataTable<TData, TValue>({
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground dark:text-stone-400">
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </p>
@@ -140,6 +141,7 @@ export function DataTable<TData, TValue>({
             size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            className="dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-700"
           >
             Previous
           </Button>
@@ -148,6 +150,7 @@ export function DataTable<TData, TValue>({
             size="sm"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            className="dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-700"
           >
             Next
           </Button>

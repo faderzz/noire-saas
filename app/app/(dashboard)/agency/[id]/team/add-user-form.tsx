@@ -37,7 +37,6 @@ export function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // Here you would typically make an API call to add the user
     console.log(values)
     onSuccess()
   }
@@ -50,14 +49,18 @@ export function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="dark:text-stone-300">Email</FormLabel>
               <FormControl>
-                <Input placeholder="team@example.com" {...field} />
+                <Input 
+                  placeholder="team@example.com" 
+                  {...field}
+                  className="dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300"
+                />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="dark:text-stone-400">
                 An invitation will be sent to this email address.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="dark:text-red-400" />
             </FormItem>
           )}
         />
@@ -67,31 +70,41 @@ export function AddUserForm({ onSuccess }: { onSuccess: () => void }) {
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
+              <FormLabel className="dark:text-stone-300">Role</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
+                <SelectContent className="dark:bg-stone-800 dark:border-stone-700">
+                  <SelectItem value="admin" className="dark:text-stone-300 dark:focus:bg-stone-700">Admin</SelectItem>
+                  <SelectItem value="user" className="dark:text-stone-300 dark:focus:bg-stone-700">User</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>
+              <FormDescription className="dark:text-stone-400">
                 Set the user&apos;s role and permissions level.
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="dark:text-red-400" />
             </FormItem>
           )}
         />
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => onSuccess()}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={() => onSuccess()}
+            className="dark:bg-stone-800 dark:border-stone-700 dark:text-stone-300 dark:hover:bg-stone-700"
+          >
             Cancel
           </Button>
-          <Button type="submit">Add Team Member</Button>
+          <Button 
+            type="submit"
+            className="dark:bg-stone-800 dark:text-white dark:hover:bg-stone-700"
+          >
+            Add Team Member
+          </Button>
         </div>
       </form>
     </Form>

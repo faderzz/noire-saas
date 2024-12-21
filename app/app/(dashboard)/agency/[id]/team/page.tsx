@@ -40,7 +40,6 @@ export default async function AgencyTeam({
 
   const url = `${data.subdomain}.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`;
 
-  // const tableData = await getData(data.id);
   const tableData = [
     {
       id: "1",
@@ -63,31 +62,27 @@ export default async function AgencyTeam({
   ] as Team[]
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="font-cal text-2xl font-bold sm:text-3xl">
-              Team Management
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Manage team members and their permissions for {data.name}
-            </p>
-          </div>
-          <a
-            href={`https://${url}`}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center rounded-md bg-primary/10 px-3 py-1 text-sm font-medium text-primary transition-colors hover:bg-primary/20"
-          >
-            {url} ↗
-          </a>
-        </div>
-      </Card>
-
-      <Card className="p-6">
-        <DataTable columns={columns} data={tableData} />
-      </Card>
+    <>
+    <div className="flex flex-col items-center justify-between space-y-4 sm:flex-row sm:space-y-0">
+      <div className="flex flex-col items-center space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0">
+        <h1 className="w-60 truncate font-cal text-xl font-bold sm:w-auto sm:text-3xl dark:text-white">
+          Team Management for {data.name}
+        </h1>
+        <a
+          href={`https://${url}`}
+          target="_blank"
+          rel="noreferrer"
+          className="truncate rounded-md bg-stone-100 px-2 py-1 text-sm font-medium text-stone-600 transition-colors hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-400 dark:hover:bg-stone-700"
+        >
+          {url} ↗
+        </a>
+      </div>
     </div>
+    <div className="w-full max-w-6xl mt-8">
+        <Card className="p-6 dark:bg-stone-900">
+          <DataTable columns={columns} data={tableData} />
+        </Card>
+      </div>
+    </>
   );
 }
