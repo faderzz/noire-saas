@@ -1,3 +1,4 @@
+# This is outdated and not accurate.
 # Noire SaaS Platform - Next.js Technical Specification
 
 ## Technical Stack
